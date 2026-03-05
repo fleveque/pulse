@@ -51,7 +51,7 @@ RUN mix release
 FROM ${RUNNER_IMAGE}
 
 RUN apt-get update -y && \
-  apt-get install -y libstdc++6 openssl libncurses6 locales ca-certificates \
+  apt-get install -y libstdc++6 openssl libncurses6 locales ca-certificates curl \
   && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
 # Set the locale
@@ -71,6 +71,9 @@ ENV MIX_ENV="prod"
 COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/pulse ./
 
 USER nobody
+
+HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:4000/up || exit 1
 
 # If using an environment that doesn't automatically reap zombie processes,
 # set tini as the entrypoint.
