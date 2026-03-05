@@ -38,6 +38,9 @@ COPY priv priv
 COPY lib lib
 COPY assets assets
 
+# Copy runtime config (needed for release)
+COPY config/runtime.exs config/
+
 # Compile the release
 RUN mix compile
 
