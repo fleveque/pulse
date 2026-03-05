@@ -97,11 +97,14 @@ defmodule Pulse.Nats.Consumer do
       {:error, reason} ->
         Logger.error("Failed to start worker for #{slug}: #{inspect(reason)}")
     end
+
+    notify_dashboard(slug)
   end
 
   defp handle_event("portfolio.opted_out", %{"slug" => slug}) do
     Logger.info("Portfolio opted out: #{slug}")
     Pulse.PortfolioSupervisor.stop_worker(slug)
+    notify_dashboard(slug)
   end
 
   defp handle_event("portfolio.updated", %{"slug" => slug, "holdings" => holdings}) do
@@ -125,5 +128,9 @@ defmodule Pulse.Nats.Consumer do
 
   defp handle_event(topic, _payload) do
     Logger.warning("Unhandled NATS event: #{topic}")
+  end
+
+  defp notify_dashboard(slug) do
+    Phoenix.PubSub.broadcast(Pulse.PubSub, "portfolios", {:portfolio_changed, slug})
   end
 end

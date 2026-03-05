@@ -6,4 +6,9 @@ defmodule PulseWeb.PageControllerTest do
     assert html_response(conn, 200) =~ "Pulse"
     assert html_response(conn, 200) =~ "Community dividend portfolio dashboard"
   end
+
+  test "GET /p/:slug renders not found for missing portfolio", %{conn: conn} do
+    conn = get(conn, ~p"/p/nonexistent")
+    assert html_response(conn, 200) =~ "Portfolio not found"
+  end
 end
