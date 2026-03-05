@@ -25,25 +25,34 @@ defmodule Pulse.Nats.Consumer do
 
   @impl true
   def handle_info({:subscribe, env_prefix}, state) do
-    subscriptions =
-      Enum.map(@subjects, fn subject ->
-        full_subject = "#{env_prefix}.#{subject}"
-        Logger.info("Subscribing to NATS subject: #{full_subject}")
+    if Process.whereis(:nats) do
+      subscriptions =
+        Enum.map(@subjects, fn subject ->
+          full_subject = "#{env_prefix}.#{subject}"
+          Logger.info("Subscribing to NATS subject: #{full_subject}")
 
-        case Gnat.sub(:nats, self(), full_subject) do
-          {:ok, sid} ->
-            {full_subject, sid}
+          case Gnat.sub(:nats, self(), full_subject) do
+            {:ok, sid} ->
+              {full_subject, sid}
 
-          {:error, reason} ->
-            Logger.error("Failed to subscribe to #{full_subject}: #{inspect(reason)}")
-            # Retry after delay
-            Process.send_after(self(), {:subscribe, env_prefix}, 5_000)
-            nil
-        end
-      end)
-      |> Enum.reject(&is_nil/1)
+            {:error, reason} ->
+              Logger.error("Failed to subscribe to #{full_subject}: #{inspect(reason)}")
+              nil
+          end
+        end)
+        |> Enum.reject(&is_nil/1)
 
-    {:noreply, %{state | subscriptions: subscriptions}}
+      if length(subscriptions) < length(@subjects) do
+        Logger.warning("Some subscriptions failed, retrying in 5s")
+        Process.send_after(self(), {:subscribe, env_prefix}, 5_000)
+      end
+
+      {:noreply, %{state | subscriptions: subscriptions}}
+    else
+      Logger.warning("NATS not connected, retrying subscriptions in 5s")
+      Process.send_after(self(), {:subscribe, env_prefix}, 5_000)
+      {:noreply, state}
+    end
   end
 
   @impl true
