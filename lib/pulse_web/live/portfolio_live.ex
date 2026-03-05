@@ -57,7 +57,10 @@ defmodule PulseWeb.PortfolioLive do
           </.link>
         </div>
 
-        <div :if={@portfolio.metrics[:total_value]} class="card bg-base-200 border border-base-300 mb-6">
+        <div
+          :if={@portfolio.metrics[:total_value]}
+          class="card bg-base-200 border border-base-300 mb-6"
+        >
           <div class="card-body">
             <p class="text-sm text-base-content/50 uppercase tracking-wide font-medium">
               Total Value
