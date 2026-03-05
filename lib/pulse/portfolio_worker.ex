@@ -49,6 +49,13 @@ defmodule Pulse.PortfolioWorker do
       {:portfolio_updated, new_state}
     )
 
+    # Notify dashboard aggregator
+    Phoenix.PubSub.broadcast(
+      Pulse.PubSub,
+      "portfolios",
+      {:portfolio_changed, state.slug}
+    )
+
     {:noreply, new_state}
   end
 
