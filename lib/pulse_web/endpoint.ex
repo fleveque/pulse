@@ -4,6 +4,9 @@ defmodule PulseWeb.Endpoint do
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
   # Set :encryption_salt if you would also like to encrypt it.
+  # Health check must be before force_ssl so Kamal proxy can reach it via HTTP
+  plug PulseWeb.HealthCheckPlug
+
   @session_options [
     store: :cookie,
     key: "_pulse_key",

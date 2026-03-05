@@ -14,9 +14,6 @@ defmodule PulseWeb.Router do
     plug :accepts, ["json"]
   end
 
-  # Health check for Kamal proxy
-  get "/up", PulseWeb.HealthController, :show
-
   scope "/", PulseWeb do
     pipe_through :browser
 
