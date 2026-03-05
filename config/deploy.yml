@@ -6,14 +6,15 @@ servers:
   web:
     - 46.224.239.228
 
+deploy_timeout: 60
+drain_timeout: 30
+
 proxy:
   ssl: true
   hosts:
     - pulse.quantic.es
   app_port: 4000
   forward_headers: true
-  deploy_timeout: 60s
-  drain_timeout: 30s
 
 registry:
   server: ghcr.io
