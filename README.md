@@ -154,6 +154,16 @@ Deployed via [Kamal](https://kamal-deploy.org/) to the same Hetzner ARM64 VPS as
 
 Auto-deploys on CI success for `main` and `beta` branches.
 
+### GitHub Secrets
+
+The deploy workflow requires these repository secrets (`Settings > Secrets and variables > Actions`):
+
+| Secret | Description |
+|---|---|
+| `SSH_PRIVATE_KEY` | Private key for SSH access to the VPS (same key as dividend-portfolio) |
+| `KAMAL_REGISTRY_PASSWORD` | Docker registry (GHCR) password / personal access token |
+| `SECRET_KEY_BASE` | Phoenix secret — generate with `mix phx.gen.secret` |
+
 ### Environment Variables
 
 | Variable | Description |
