@@ -2,14 +2,14 @@ defmodule Pulse.Nats.Connection do
   @moduledoc """
   Manages the NATS connection using Gnat.
 
-  Wraps Gnat.ConnectionSupervisor in a task that retries on failure,
-  so the rest of the application can start even if NATS is unavailable.
+  Retries connection on failure so the rest of the application can start
+  even if NATS is unavailable. Registers the connection as `:nats`.
   """
   use GenServer
 
   require Logger
 
-  @retry_interval 5_000
+  @retry_interval 10_000
 
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
@@ -17,50 +17,70 @@ defmodule Pulse.Nats.Connection do
 
   @impl true
   def init(_opts) do
+    Process.flag(:trap_exit, true)
     send(self(), :connect)
     {:ok, %{connection_pid: nil}}
   end
 
   @impl true
   def handle_info(:connect, state) do
-    connection_settings = Application.get_env(:pulse, :nats, [])
+    settings = Application.get_env(:pulse, :nats, [])
 
     gnat_settings = %{
-      name: :nats,
-      connection_settings: [
-        %{
-          host: Keyword.get(connection_settings, :host, "localhost"),
-          port: Keyword.get(connection_settings, :port, 4222)
-        }
-      ]
+      host: Keyword.get(settings, :host, "localhost"),
+      port: Keyword.get(settings, :port, 4222)
     }
 
-    case Gnat.ConnectionSupervisor.start_link(gnat_settings) do
-      {:ok, pid} ->
-        Logger.info("Connected to NATS")
-        Process.monitor(pid)
-        {:noreply, %{state | connection_pid: pid}}
+    try do
+      case Gnat.start_link(gnat_settings) do
+        {:ok, pid} ->
+          Process.register(pid, :nats)
+          Logger.info("Connected to NATS at #{gnat_settings.host}:#{gnat_settings.port}")
+          Process.monitor(pid)
+          {:noreply, %{state | connection_pid: pid}}
 
-      {:error, reason} ->
-        Logger.warning(
-          "Failed to connect to NATS: #{inspect(reason)}, retrying in #{@retry_interval}ms"
-        )
-
-        Process.send_after(self(), :connect, @retry_interval)
+        {:error, reason} ->
+          schedule_retry(reason)
+          {:noreply, %{state | connection_pid: nil}}
+      end
+    catch
+      :exit, reason ->
+        schedule_retry(reason)
         {:noreply, %{state | connection_pid: nil}}
     end
   end
 
   def handle_info({:DOWN, _ref, :process, pid, reason}, %{connection_pid: pid} = state) do
     Logger.warning(
-      "NATS connection lost: #{inspect(reason)}, reconnecting in #{@retry_interval}ms"
+      "NATS connection lost (#{inspect(reason)}), reconnecting in #{div(@retry_interval, 1000)}s"
     )
 
     Process.send_after(self(), :connect, @retry_interval)
     {:noreply, %{state | connection_pid: nil}}
   end
 
+  def handle_info({:EXIT, pid, reason}, %{connection_pid: pid} = state) do
+    Logger.warning(
+      "NATS process exited (#{inspect(reason)}), reconnecting in #{div(@retry_interval, 1000)}s"
+    )
+
+    Process.send_after(self(), :connect, @retry_interval)
+    {:noreply, %{state | connection_pid: nil}}
+  end
+
+  def handle_info({:EXIT, _pid, _reason}, state) do
+    {:noreply, state}
+  end
+
   def handle_info(_msg, state) do
     {:noreply, state}
+  end
+
+  defp schedule_retry(reason) do
+    Logger.warning(
+      "NATS unavailable (#{inspect(reason)}), retrying in #{div(@retry_interval, 1000)}s"
+    )
+
+    Process.send_after(self(), :connect, @retry_interval)
   end
 end
