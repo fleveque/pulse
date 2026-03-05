@@ -1,0 +1,29 @@
+{
+  "name": "pulse",
+  "dockerComposeFile": "compose.yaml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": "false",
+      "installDirenv": "true"
+    }
+  },
+
+  "containerEnv": {
+    "NATS_HOST": "nats",
+    "NATS_PORT": "4222",
+    "NATS_ENV_PREFIX": "dev"
+  },
+
+  "forwardPorts": [4000, 4222, 8222],
+
+  "postCreateCommand": "mix setup",
+
+  "mounts": [
+    "source=${env:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached"
+  ],
+  "remoteUser": "vscode"
+}

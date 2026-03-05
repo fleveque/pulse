@@ -1,0 +1,32 @@
+/.git/
+/.gitignore
+
+# Elixir/Erlang build artifacts
+/_build/
+/deps/
+*.ez
+
+# Generated on crash by the VM
+erl_crash.dump
+
+# Static artifacts (rebuilt in Docker)
+/priv/static/assets/
+
+# Environment files
+/.env*
+
+# IDE
+/.vscode/
+/.idea/
+
+# CI/CD and deployment
+/.github
+/.kamal
+/config/deploy*.yml
+
+# Docker
+/.dockerignore
+/Dockerfile*
+
+# Test artifacts
+/cover/

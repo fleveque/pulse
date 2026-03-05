@@ -1,0 +1,16 @@
+# Beta environment overrides (merged with deploy.yml)
+# Deploy with: kamal deploy -d beta
+
+proxy:
+  ssl: true
+  hosts:
+    - beta-pulse.quantic.es
+
+env:
+  clear:
+    PHX_SERVER: true
+    PHX_HOST: beta-pulse.quantic.es
+    PORT: "4000"
+    NATS_HOST: dividend-portfolio-nats
+    NATS_PORT: "4222"
+    NATS_ENV_PREFIX: beta

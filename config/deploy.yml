@@ -1,0 +1,33 @@
+service: pulse
+
+image: fleveque/pulse
+
+servers:
+  web:
+    - 46.224.239.228
+
+proxy:
+  ssl: true
+  hosts:
+    - pulse.quantic.es
+  app_port: 4000
+
+registry:
+  server: ghcr.io
+  username: fleveque
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+env:
+  secret:
+    - SECRET_KEY_BASE
+  clear:
+    PHX_SERVER: true
+    PHX_HOST: pulse.quantic.es
+    PORT: "4000"
+    NATS_HOST: dividend-portfolio-nats
+    NATS_PORT: "4222"
+    NATS_ENV_PREFIX: prod
+
+builder:
+  arch: arm64
