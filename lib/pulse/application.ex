@@ -13,9 +13,13 @@ defmodule Pulse.Application do
       # Portfolio OTP tree
       {Registry, keys: :unique, name: Pulse.PortfolioRegistry},
       {Pulse.PortfolioSupervisor, []},
+      {Pulse.Store, []},
 
       # Dashboard aggregator (must start before NATS consumer)
       Pulse.DashboardAggregator,
+
+      # Restore persisted portfolios before NATS events arrive
+      {Task, fn -> Pulse.Store.restore_all() end},
 
       # NATS connection and consumer
       Pulse.Nats.Connection,

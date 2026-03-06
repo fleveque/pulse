@@ -35,6 +35,9 @@ pulse-*.tar
 npm-debug.log
 /assets/node_modules/
 
+# DETS data files (portfolio persistence)
+/priv/data/
+
 # Environment files (contain secrets)
 .env
 .envrc

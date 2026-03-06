@@ -10,6 +10,24 @@
     <.live_title default="Pulse" suffix=" · Pulse">
       {assigns[:page_title]}
     </.live_title>
+    <meta
+      name="description"
+      content={assigns[:meta_description] || "Real-time community dividend portfolio dashboard"}
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Pulse" />
+    <meta property="og:title" content={(assigns[:page_title] || "Pulse") <> " · Pulse"} />
+    <meta
+      property="og:description"
+      content={assigns[:meta_description] || "Real-time community dividend portfolio dashboard"}
+    />
+    <meta property="og:url" content={assigns[:meta_url] || ""} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={(assigns[:page_title] || "Pulse") <> " · Pulse"} />
+    <meta
+      name="twitter:description"
+      content={assigns[:meta_description] || "Real-time community dividend portfolio dashboard"}
+    />
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>

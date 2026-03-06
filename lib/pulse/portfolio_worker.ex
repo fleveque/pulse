@@ -43,6 +43,8 @@ defmodule Pulse.PortfolioWorker do
   def handle_cast({:update_holdings, holdings}, state) do
     new_state = %{state | holdings: holdings, metrics: compute_metrics(holdings)}
 
+    Pulse.Store.put(state.slug, new_state)
+
     Phoenix.PubSub.broadcast(
       Pulse.PubSub,
       "portfolio:#{state.slug}",

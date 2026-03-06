@@ -14,3 +14,7 @@ env:
     NATS_HOST: dividend-portfolio-nats
     NATS_PORT: "4222"
     NATS_ENV_PREFIX: beta
+    DATA_DIR: /app/data
+
+volumes:
+  - pulse_beta_data:/app/data

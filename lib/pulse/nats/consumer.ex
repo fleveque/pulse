@@ -103,6 +103,7 @@ defmodule Pulse.Nats.Consumer do
 
   defp handle_event("portfolio.opted_out", %{"slug" => slug}) do
     Logger.info("Portfolio opted out: #{slug}")
+    Pulse.Store.delete(slug)
     Pulse.PortfolioSupervisor.stop_worker(slug)
     notify_dashboard(slug)
   end

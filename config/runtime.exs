@@ -29,6 +29,9 @@ config :pulse, :nats,
 
 config :pulse, :nats_env_prefix, System.get_env("NATS_ENV_PREFIX", "dev")
 
+# DETS data directory for portfolio persistence
+config :pulse, :data_dir, System.get_env("DATA_DIR", "priv/data")
+
 # Logo service for stock logos
 config :pulse, :logo_service_url, System.get_env("LOGO_SERVICE_URL", "https://logos.quantic.es")
 config :pulse, :logo_service_api_key, System.get_env("LOGO_SERVICE_API_KEY", "")
