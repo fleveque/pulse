@@ -8,7 +8,8 @@
 import Config
 
 config :pulse,
-  generators: [timestamp_type: :utc_datetime]
+  generators: [timestamp_type: :utc_datetime],
+  data_dir: "priv/data"
 
 # Configure the endpoint
 config :pulse, PulseWeb.Endpoint,

@@ -29,8 +29,11 @@ config :pulse, :nats,
 
 config :pulse, :nats_env_prefix, System.get_env("NATS_ENV_PREFIX", "dev")
 
-# DETS data directory for portfolio persistence
-config :pulse, :data_dir, System.get_env("DATA_DIR", "priv/data")
+# DETS data directory for portfolio persistence (only override if env var is set,
+# so test.exs config is preserved in test environment)
+if data_dir = System.get_env("DATA_DIR") do
+  config :pulse, :data_dir, data_dir
+end
 
 # Logo service for stock logos
 config :pulse, :logo_service_url, System.get_env("LOGO_SERVICE_URL", "https://logos.quantic.es")

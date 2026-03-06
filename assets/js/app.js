@@ -24,27 +24,69 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/pulse"
 import topbar from "../vendor/topbar"
+import html2canvas from "../vendor/html2canvas.min"
 
 const ShareButton = {
   mounted() {
-    this.el.addEventListener("click", () => {
+    this.el.addEventListener("click", async () => {
       const url = this.el.dataset.url
       const title = this.el.dataset.title
       const text = this.el.dataset.text
+      const label = document.getElementById("share-label")
+      const setLabel = (msg) => { if (label) label.textContent = msg }
+      const target = document.getElementById("portfolio-capture")
 
-      if (navigator.share) {
-        navigator.share({ url, title, text }).catch(() => {})
-      } else {
-        navigator.clipboard.writeText(url).then(() => {
-          const label = document.getElementById("share-label")
-          if (label) {
-            const original = label.textContent
-            label.textContent = "Link copied!"
-            setTimeout(() => { label.textContent = original }, 2000)
-          }
-        })
+      if (!target) {
+        // Fallback: share URL only
+        this._shareUrl(url, title, text, label)
+        return
       }
+
+      setLabel("Capturing...")
+
+      try {
+        const canvas = await html2canvas(target, {
+          backgroundColor: null,
+          scale: 2,
+          useCORS: true,
+          logging: false,
+        })
+
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"))
+        const file = new File([blob], "portfolio.png", { type: "image/png" })
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title, text, url })
+        } else if (navigator.share) {
+          await navigator.share({ title, text, url })
+        } else {
+          await navigator.clipboard.writeText(url)
+          setLabel("Link copied!")
+          setTimeout(() => setLabel("Share"), 2000)
+          return
+        }
+      } catch (e) {
+        if (e.name !== "AbortError") {
+          // Fallback on any error
+          this._shareUrl(url, title, text, label)
+          return
+        }
+      }
+
+      setLabel("Share")
     })
+  },
+
+  _shareUrl(url, title, text, label) {
+    const setLabel = (msg) => { if (label) label.textContent = msg }
+    if (navigator.share) {
+      navigator.share({ url, title, text }).catch(() => {})
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        setLabel("Link copied!")
+        setTimeout(() => setLabel("Share"), 2000)
+      })
+    }
   }
 }
 
