@@ -26,21 +26,13 @@ import {hooks as colocatedHooks} from "phoenix-colocated/pulse"
 import topbar from "../vendor/topbar"
 import html2canvas from "../vendor/html2canvas.min"
 
-const ShareButton = {
+const SaveImage = {
   mounted() {
     this.el.addEventListener("click", async () => {
-      const url = this.el.dataset.url
-      const title = this.el.dataset.title
-      const text = this.el.dataset.text
-      const label = document.getElementById("share-label")
+      const label = this.el.querySelector("[data-label]")
       const setLabel = (msg) => { if (label) label.textContent = msg }
       const target = document.getElementById("portfolio-capture")
-
-      if (!target) {
-        // Fallback: share URL only
-        this._shareUrl(url, title, text, label)
-        return
-      }
+      if (!target) return
 
       setLabel("Capturing...")
 
@@ -51,42 +43,41 @@ const ShareButton = {
           useCORS: true,
           logging: false,
         })
-
         const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"))
-        const file = new File([blob], "portfolio.png", { type: "image/png" })
-
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title, text, url })
-        } else if (navigator.share) {
-          await navigator.share({ title, text, url })
-        } else {
-          await navigator.clipboard.writeText(url)
-          setLabel("Link copied!")
-          setTimeout(() => setLabel("Share"), 2000)
-          return
-        }
-      } catch (e) {
-        if (e.name !== "AbortError") {
-          // Fallback on any error
-          this._shareUrl(url, title, text, label)
-          return
-        }
+        const a = document.createElement("a")
+        a.href = URL.createObjectURL(blob)
+        a.download = "portfolio.png"
+        a.click()
+        URL.revokeObjectURL(a.href)
+        setLabel("Saved!")
+        setTimeout(() => setLabel("Save Image"), 2000)
+      } catch (_e) {
+        setLabel("Failed")
+        setTimeout(() => setLabel("Save Image"), 2000)
       }
-
-      setLabel("Share")
     })
-  },
+  }
+}
 
-  _shareUrl(url, title, text, label) {
-    const setLabel = (msg) => { if (label) label.textContent = msg }
-    if (navigator.share) {
-      navigator.share({ url, title, text }).catch(() => {})
-    } else {
-      navigator.clipboard.writeText(url).then(() => {
-        setLabel("Link copied!")
-        setTimeout(() => setLabel("Share"), 2000)
-      })
-    }
+const ShareLink = {
+  mounted() {
+    this.el.addEventListener("click", async () => {
+      const url = this.el.dataset.url
+      const title = this.el.dataset.title
+      const text = this.el.dataset.text
+      const label = this.el.querySelector("[data-label]")
+      const setLabel = (msg) => { if (label) label.textContent = msg }
+
+      if (navigator.share) {
+        try {
+          await navigator.share({ url, title, text })
+        } catch (_e) { /* user cancelled */ }
+      } else {
+        await navigator.clipboard.writeText(url)
+        setLabel("Copied!")
+        setTimeout(() => setLabel("Share Link"), 2000)
+      }
+    })
   }
 }
 
@@ -94,7 +85,7 @@ const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks, ShareButton},
+  hooks: {...colocatedHooks, SaveImage, ShareLink},
 })
 
 // Show progress bar on live navigation and form submits
