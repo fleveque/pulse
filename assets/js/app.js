@@ -44,6 +44,16 @@ const SaveImage = {
           logging: false,
         })
         const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"))
+        const file = new File([blob], "portfolio.png", { type: "image/png" })
+
+        // Try native share with image (works on most mobile browsers)
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file] })
+          setLabel("Save Image")
+          return
+        }
+
+        // Desktop fallback: download via anchor click
         const a = document.createElement("a")
         a.href = URL.createObjectURL(blob)
         a.download = "portfolio.png"
@@ -51,7 +61,9 @@ const SaveImage = {
         URL.revokeObjectURL(a.href)
         setLabel("Saved!")
         setTimeout(() => setLabel("Save Image"), 2000)
-      } catch (_e) {
+      } catch (e) {
+        if (e.name === "AbortError") { setLabel("Save Image"); return }
+        console.error("SaveImage failed:", e)
         setLabel("Failed")
         setTimeout(() => setLabel("Save Image"), 2000)
       }
