@@ -51,11 +51,11 @@ defmodule PulseWeb.DashboardLive do
       <div class="text-center mb-10">
         <div class="flex justify-center mb-4">
           <div class="relative">
-            <Layouts.quantic_logo size={72} />
+            <Layouts.pulse_logo size={72} />
             <span class="absolute -top-1 -right-1 flex size-4">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-500 opacity-75">
               </span>
-              <span class="relative inline-flex rounded-full size-4 bg-success"></span>
+              <span class="relative inline-flex rounded-full size-4 bg-violet-500"></span>
             </span>
           </div>
         </div>
@@ -260,7 +260,15 @@ defmodule PulseWeb.DashboardLive do
               </div>
               <p class="font-semibold text-sm">Build Your Portfolio</p>
               <p class="text-xs text-base-content/50 mt-1">
-                Track your holdings on quantic.es
+                Track your holdings on
+                <a
+                  href="https://quantic.es"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-0.5 link link-primary"
+                >
+                  <Layouts.quantic_logo size={12} /> quantic.es
+                </a>
               </p>
             </div>
             <div>
