@@ -86,6 +86,7 @@ defmodule PulseWeb do
       import Phoenix.HTML
       # Core UI components
       import PulseWeb.CoreComponents
+      import PulseWeb.Components.StockLogo
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS

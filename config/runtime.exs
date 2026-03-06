@@ -29,6 +29,10 @@ config :pulse, :nats,
 
 config :pulse, :nats_env_prefix, System.get_env("NATS_ENV_PREFIX", "dev")
 
+# Logo service for stock logos
+config :pulse, :logo_service_url, System.get_env("LOGO_SERVICE_URL", "https://logos.quantic.es")
+config :pulse, :logo_service_api_key, System.get_env("LOGO_SERVICE_API_KEY", "")
+
 if config_env() == :prod do
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you

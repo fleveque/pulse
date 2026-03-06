@@ -25,7 +25,9 @@ registry:
 env:
   secret:
     - SECRET_KEY_BASE
+    - LOGO_SERVICE_API_KEY
   clear:
+    LOGO_SERVICE_URL: https://logos.quantic.es
     PHX_SERVER: true
     PHX_HOST: pulse.quantic.es
     PORT: "4000"
