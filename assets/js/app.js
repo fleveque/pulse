@@ -67,7 +67,31 @@ const ShareLink = {
       const text = this.el.dataset.text
       const label = this.el.querySelector("[data-label]")
       const setLabel = (msg) => { if (label) label.textContent = msg }
+      const target = document.getElementById("portfolio-capture")
 
+      if (target) {
+        setLabel("Capturing...")
+        try {
+          const canvas = await html2canvas(target, {
+            backgroundColor: null,
+            scale: 2,
+            useCORS: true,
+            logging: false,
+          })
+          const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"))
+          const file = new File([blob], "portfolio.png", { type: "image/png" })
+
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title, text, url })
+            setLabel("Share")
+            return
+          }
+        } catch (e) {
+          if (e.name === "AbortError") { setLabel("Share"); return }
+        }
+      }
+
+      // Fallback: share URL or copy to clipboard
       if (navigator.share) {
         try {
           await navigator.share({ url, title, text })
@@ -75,8 +99,10 @@ const ShareLink = {
       } else {
         await navigator.clipboard.writeText(url)
         setLabel("Copied!")
-        setTimeout(() => setLabel("Share Link"), 2000)
+        setTimeout(() => setLabel("Share"), 2000)
+        return
       }
+      setLabel("Share")
     })
   }
 }
