@@ -9,6 +9,9 @@ services:
     volumes:
       - ../..:/workspaces:cached
 
+    env_file:
+      - ../.env
+
     command: sleep infinity
 
     depends_on:

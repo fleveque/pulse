@@ -35,3 +35,7 @@ pulse-*.tar
 npm-debug.log
 /assets/node_modules/
 
+# Environment files (contain secrets)
+.env
+.envrc
+

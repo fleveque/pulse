@@ -35,140 +35,82 @@ defmodule PulseWeb.PortfolioLive do
     ~H"""
     <Layouts.app flash={@flash}>
       <div :if={@not_found} class="text-center py-16">
+        <.icon name="hero-briefcase" class="size-16 mx-auto text-base-content/20 mb-4" />
         <h1 class="text-2xl font-bold text-base-content/40 mb-2">Portfolio not found</h1>
         <p class="text-base-content/50">
           The portfolio "{@slug}" doesn't exist or hasn't been shared yet.
         </p>
-        <.link navigate="/" class="link link-primary mt-4 inline-block">
+        <.link navigate="/" class="btn btn-primary btn-sm mt-4">
           Back to dashboard
         </.link>
       </div>
 
       <div :if={!@not_found && @portfolio}>
         <%!-- Header --%>
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center justify-between mb-8">
           <div>
-            <h1 class="text-3xl font-bold">{@slug}'s Portfolio</h1>
-            <p class="text-base-content/50 mt-1">
-              {length(@portfolio.holdings)} holdings
-            </p>
+            <div class="flex items-center gap-3">
+              <span class="flex items-center justify-center size-12 rounded-full bg-primary/15 text-primary text-xl font-bold">
+                {@slug |> String.first() |> String.upcase()}
+              </span>
+              <div>
+                <h1 class="text-2xl font-bold">{@slug}</h1>
+                <p class="text-base-content/50 text-sm">
+                  {length(@portfolio.holdings)} holdings
+                </p>
+              </div>
+            </div>
           </div>
           <.link navigate="/" class="btn btn-ghost btn-sm">
-            Dashboard
+            <.icon name="hero-arrow-left-micro" class="size-4" /> Dashboard
           </.link>
         </div>
 
-        <%!-- Summary Cards --%>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <div class="card bg-base-200 border border-base-300">
-            <div class="card-body p-5">
-              <p class="text-sm text-base-content/50 uppercase tracking-wide font-medium">
-                Total Value
-              </p>
-              <p class="text-2xl font-bold text-base-content">
-                {format_currency(@portfolio.metrics[:total_value])}
-              </p>
-            </div>
-          </div>
-          <div class="card bg-base-200 border border-base-300">
-            <div class="card-body p-5">
-              <p class="text-sm text-base-content/50 uppercase tracking-wide font-medium">
-                Holdings
-              </p>
-              <p class="text-2xl font-bold text-base-content">
-                {@portfolio.metrics[:holding_count] || 0}
-              </p>
-            </div>
-          </div>
-          <div class="card bg-base-200 border border-base-300">
-            <div class="card-body p-5">
-              <p class="text-sm text-base-content/50 uppercase tracking-wide font-medium">
-                Avg Position
-              </p>
-              <p class="text-2xl font-bold text-base-content">
-                {format_currency(avg_position(@portfolio.metrics))}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <%!-- Holdings Table --%>
-        <div class="card bg-base-200 border border-base-300 overflow-hidden mb-6">
-          <div class="card-body p-0">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Symbol</th>
-                  <th class="text-right">Quantity</th>
-                  <th class="text-right">Avg Price</th>
-                  <th class="text-right">Value</th>
-                  <th class="text-right">Allocation</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  :for={alloc <- sorted_allocations(@portfolio.metrics[:allocations])}
-                  class="hover"
-                >
-                  <td class="font-semibold">{alloc.symbol}</td>
-                  <td class="text-right">
-                    {format_number(find_field(@portfolio.holdings, alloc.symbol, "quantity"))}
-                  </td>
-                  <td class="text-right">
-                    {format_currency(find_field(@portfolio.holdings, alloc.symbol, "avg_price"))}
-                  </td>
-                  <td class="text-right font-medium">{format_currency(alloc.value)}</td>
-                  <td class="text-right">
-                    <div class="flex items-center justify-end gap-2">
-                      <div class="w-16 bg-base-300 rounded-full h-2 hidden sm:block">
-                        <div
-                          class="bg-primary rounded-full h-2"
-                          style={"width: #{min(alloc.percentage, 100)}%"}
-                        >
-                        </div>
-                      </div>
-                      <span class="text-sm tabular-nums">{alloc.percentage}%</span>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <%!-- Allocation Chart (visual bars) --%>
+        <%!-- Allocation Bar --%>
         <div
           :if={length(@portfolio.metrics[:allocations] || []) > 0}
-          class="card bg-base-200 border border-base-300"
+          class="mb-8"
         >
-          <div class="card-body p-5">
-            <h2 class="text-lg font-bold mb-3">Allocation</h2>
-            <div class="flex rounded-full overflow-hidden h-6 bg-base-300">
-              <div
-                :for={
-                  {alloc, idx} <-
-                    Enum.with_index(sorted_allocations(@portfolio.metrics[:allocations]))
-                }
-                class={"h-full " <> allocation_color(idx)}
-                style={"width: #{alloc.percentage}%"}
-                title={"#{alloc.symbol}: #{alloc.percentage}%"}
-              >
-              </div>
+          <div class="flex rounded-full overflow-hidden h-4 bg-base-300">
+            <div
+              :for={
+                {alloc, idx} <-
+                  Enum.with_index(sorted_allocations(@portfolio.metrics[:allocations]))
+              }
+              class={"h-full " <> allocation_color(idx)}
+              style={"width: #{alloc.percentage}%"}
+              title={"#{alloc.symbol}: #{alloc.percentage}%"}
+            >
             </div>
-            <div class="flex flex-wrap gap-3 mt-3">
-              <div
-                :for={
-                  {alloc, idx} <-
-                    Enum.with_index(sorted_allocations(@portfolio.metrics[:allocations]))
-                }
-                class="flex items-center gap-1.5 text-sm"
-              >
-                <div class={"w-3 h-3 rounded-full " <> allocation_color(idx)}></div>
-                <span class="font-medium">{alloc.symbol}</span>
-                <span class="text-base-content/50">{alloc.percentage}%</span>
+          </div>
+        </div>
+
+        <%!-- Stock Grid --%>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div
+            :for={
+              {alloc, idx} <-
+                Enum.with_index(sorted_allocations(@portfolio.metrics[:allocations]))
+            }
+            class="card bg-base-200 border border-base-300 hover:border-primary/30 transition-colors"
+          >
+            <div class="card-body p-4 items-center text-center">
+              <div class="mb-2">
+                <.stock_logo symbol={alloc.symbol} />
+              </div>
+              <p class="font-bold text-sm">{alloc.symbol}</p>
+              <div class="flex items-center gap-1.5">
+                <div class={"w-2.5 h-2.5 rounded-full flex-shrink-0 " <> allocation_color(idx)}></div>
+                <span class="text-lg font-bold tabular-nums">{alloc.percentage}%</span>
               </div>
             </div>
           </div>
+        </div>
+
+        <%!-- Empty state --%>
+        <div :if={@portfolio.holdings == []} class="text-center py-12">
+          <.icon name="hero-chart-pie" class="size-12 mx-auto text-base-content/20 mb-3" />
+          <p class="text-base-content/50">This portfolio has no holdings yet.</p>
         </div>
       </div>
     </Layouts.app>
@@ -181,39 +123,10 @@ defmodule PulseWeb.PortfolioLive do
     Enum.sort_by(allocations, fn a -> -a.percentage end)
   end
 
-  defp find_field(holdings, symbol, field) do
-    case Enum.find(holdings, fn h -> h["symbol"] == symbol end) do
-      nil -> 0
-      h -> h[field] || 0
-    end
-  end
-
-  defp avg_position(%{total_value: total, holding_count: count}) when count > 0 do
-    total / count
-  end
-
-  defp avg_position(_), do: 0
-
-  defp format_currency(value) when is_number(value) do
-    "$#{:erlang.float_to_binary(value * 1.0, decimals: 2)}"
-  end
-
-  defp format_currency(_), do: "$0.00"
-
-  defp format_number(value) when is_float(value) do
-    if value == Float.floor(value) do
-      "#{trunc(value)}"
-    else
-      :erlang.float_to_binary(value, decimals: 2)
-    end
-  end
-
-  defp format_number(value) when is_integer(value), do: "#{value}"
-  defp format_number(_), do: "0"
-
   @allocation_colors ~w(
-    bg-primary bg-secondary bg-accent bg-info bg-success bg-warning bg-error
-    bg-primary/70 bg-secondary/70 bg-accent/70 bg-info/70 bg-success/70
+    bg-emerald-500 bg-blue-500 bg-purple-500 bg-orange-500 bg-pink-500
+    bg-cyan-500 bg-indigo-500 bg-teal-500 bg-rose-500 bg-amber-500
+    bg-lime-500 bg-sky-500 bg-fuchsia-500
   )
 
   defp allocation_color(index) do

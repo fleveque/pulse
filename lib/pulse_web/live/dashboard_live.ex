@@ -36,35 +36,73 @@ defmodule PulseWeb.DashboardLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash}>
-      <div class="mb-8">
-        <h1 class="text-3xl font-bold">Pulse</h1>
-        <p class="text-base-content/60 mt-1">Community dividend portfolio dashboard</p>
+      <%!-- Hero Section --%>
+      <div class="text-center mb-10">
+        <div class="flex justify-center mb-4">
+          <div class="relative">
+            <Layouts.quantic_logo size={72} />
+            <span class="absolute -top-1 -right-1 flex size-4">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75">
+              </span>
+              <span class="relative inline-flex rounded-full size-4 bg-success"></span>
+            </span>
+          </div>
+        </div>
+        <h1 class="text-4xl font-extrabold tracking-tight">
+          Pulse
+        </h1>
+        <p class="text-base-content/50 mt-2 text-lg">
+          Real-time community dividend portfolio dashboard
+        </p>
       </div>
 
-      <%!-- Stats --%>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div class="card bg-base-200 border border-base-300">
+      <%!-- Stats Cards --%>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+        <div class="card bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border border-emerald-500/20">
           <div class="card-body p-5">
-            <p class="text-sm text-base-content/50 uppercase tracking-wide font-medium">
-              Shared Portfolios
-            </p>
-            <p class="text-3xl font-bold text-base-content">{@portfolio_count}</p>
+            <div class="flex items-center gap-3">
+              <div class="rounded-xl bg-emerald-500/15 p-2.5">
+                <.icon name="hero-user-group" class="size-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <p class="text-xs text-base-content/50 uppercase tracking-wider font-semibold">
+                  Portfolios
+                </p>
+                <p class="text-2xl font-bold">{@portfolio_count}</p>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="card bg-base-200 border border-base-300">
+
+        <div class="card bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20">
           <div class="card-body p-5">
-            <p class="text-sm text-base-content/50 uppercase tracking-wide font-medium">
-              Total Holdings
-            </p>
-            <p class="text-3xl font-bold text-base-content">{@total_holdings}</p>
+            <div class="flex items-center gap-3">
+              <div class="rounded-xl bg-blue-500/15 p-2.5">
+                <.icon name="hero-chart-bar" class="size-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <p class="text-xs text-base-content/50 uppercase tracking-wider font-semibold">
+                  Holdings
+                </p>
+                <p class="text-2xl font-bold">{@total_holdings}</p>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="card bg-base-200 border border-base-300">
+
+        <div class="card bg-gradient-to-br from-amber-500/10 to-amber-600/5 border border-amber-500/20">
           <div class="card-body p-5">
-            <p class="text-sm text-base-content/50 uppercase tracking-wide font-medium">
-              Community Value
-            </p>
-            <p class="text-3xl font-bold text-base-content">{format_currency(@total_value)}</p>
+            <div class="flex items-center gap-3">
+              <div class="rounded-xl bg-amber-500/15 p-2.5">
+                <.icon name="hero-banknotes" class="size-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div>
+                <p class="text-xs text-base-content/50 uppercase tracking-wider font-semibold">
+                  Community Value
+                </p>
+                <p class="text-2xl font-bold">{format_currency(@total_value)}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -73,49 +111,113 @@ defmodule PulseWeb.DashboardLive do
         <%!-- Popular Stocks --%>
         <div class="card bg-base-200 border border-base-300">
           <div class="card-body p-5">
-            <h2 class="text-lg font-bold mb-3">Popular Stocks</h2>
-            <div :if={@popular_stocks == []} class="text-base-content/50 text-sm py-4 text-center">
-              No stocks yet. Share your portfolio from
-              <a href="https://quantic.es" class="link link-primary">quantic.es</a>
-              to appear here.
+            <div class="flex items-center gap-2 mb-4">
+              <.icon name="hero-fire" class="size-5 text-orange-500" />
+              <h2 class="text-lg font-bold">Popular Stocks</h2>
             </div>
-            <table :if={@popular_stocks != []} class="table table-sm">
-              <thead>
-                <tr>
-                  <th>Symbol</th>
-                  <th class="text-right">Holders</th>
-                  <th class="text-right">Total Qty</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr :for={stock <- @popular_stocks}>
-                  <td class="font-semibold">{stock.symbol}</td>
-                  <td class="text-right">{stock.holders}</td>
-                  <td class="text-right">{format_number(stock.total_quantity)}</td>
-                </tr>
-              </tbody>
-            </table>
+            <div :if={@popular_stocks == []} class="py-8 text-center">
+              <.icon name="hero-chart-bar" class="size-12 mx-auto text-base-content/20 mb-3" />
+              <p class="text-base-content/50 text-sm">No stocks yet</p>
+              <p class="text-base-content/40 text-xs mt-1">
+                Share your portfolio from
+                <a href="https://quantic.es" class="link link-primary">quantic.es</a>
+              </p>
+            </div>
+            <div :if={@popular_stocks != []} class="space-y-2">
+              <div
+                :for={{stock, idx} <- Enum.with_index(@popular_stocks)}
+                class="flex items-center gap-3 rounded-lg bg-base-300/50 px-3 py-2.5"
+              >
+                <span class={[
+                  "flex items-center justify-center size-7 rounded-full text-xs font-bold",
+                  rank_style(idx)
+                ]}>
+                  {idx + 1}
+                </span>
+                <.stock_logo symbol={stock.symbol} size={32} />
+                <span class="font-semibold flex-1">{stock.symbol}</span>
+                <div class="flex items-center gap-4 text-sm text-base-content/60">
+                  <span class="flex items-center gap-1">
+                    <.icon name="hero-user-group-micro" class="size-3.5" />
+                    {stock.holders}
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <.icon name="hero-square-3-stack-3d-micro" class="size-3.5" />
+                    {format_number(stock.total_quantity)}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         <%!-- Shared Portfolios --%>
         <div class="card bg-base-200 border border-base-300">
           <div class="card-body p-5">
-            <h2 class="text-lg font-bold mb-3">Shared Portfolios</h2>
-            <div
-              :if={@portfolio_slugs == []}
-              class="text-base-content/50 text-sm py-4 text-center"
-            >
-              No portfolios shared yet.
+            <div class="flex items-center gap-2 mb-4">
+              <.icon name="hero-briefcase" class="size-5 text-primary" />
+              <h2 class="text-lg font-bold">Shared Portfolios</h2>
             </div>
-            <div :if={@portfolio_slugs != []} class="flex flex-wrap gap-2">
+            <div :if={@portfolio_slugs == []} class="py-8 text-center">
+              <.icon name="hero-briefcase" class="size-12 mx-auto text-base-content/20 mb-3" />
+              <p class="text-base-content/50 text-sm">No portfolios shared yet</p>
+              <p class="text-base-content/40 text-xs mt-1">
+                Enable sharing in your
+                <a href="https://quantic.es" class="link link-primary">quantic.es</a>
+                settings
+              </p>
+            </div>
+            <div :if={@portfolio_slugs != []} class="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <.link
                 :for={slug <- @portfolio_slugs}
                 navigate={~p"/p/#{slug}"}
-                class="btn btn-sm btn-outline"
+                class="flex items-center gap-2 rounded-lg bg-base-300/50 px-3 py-2.5 hover:bg-primary/10 transition-colors group"
               >
-                {slug}
+                <span class="flex items-center justify-center size-8 rounded-full bg-primary/15 text-primary text-sm font-bold">
+                  {slug |> String.first() |> String.upcase()}
+                </span>
+                <span class="font-medium group-hover:text-primary transition-colors">{slug}</span>
+                <.icon
+                  name="hero-arrow-right-micro"
+                  class="size-4 ml-auto text-base-content/30 group-hover:text-primary transition-colors"
+                />
               </.link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <%!-- How It Works --%>
+      <div class="mt-10 card bg-base-200 border border-base-300">
+        <div class="card-body p-6">
+          <h2 class="text-lg font-bold mb-4 text-center">How It Works</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+            <div>
+              <div class="rounded-full bg-primary/10 size-12 flex items-center justify-center mx-auto mb-3">
+                <.icon name="hero-plus-circle" class="size-6 text-primary" />
+              </div>
+              <p class="font-semibold text-sm">Build Your Portfolio</p>
+              <p class="text-xs text-base-content/50 mt-1">
+                Track your holdings on quantic.es
+              </p>
+            </div>
+            <div>
+              <div class="rounded-full bg-primary/10 size-12 flex items-center justify-center mx-auto mb-3">
+                <.icon name="hero-share" class="size-6 text-primary" />
+              </div>
+              <p class="font-semibold text-sm">Share It</p>
+              <p class="text-xs text-base-content/50 mt-1">
+                Enable sharing in settings to go public
+              </p>
+            </div>
+            <div>
+              <div class="rounded-full bg-primary/10 size-12 flex items-center justify-center mx-auto mb-3">
+                <.icon name="hero-signal" class="size-6 text-primary" />
+              </div>
+              <p class="font-semibold text-sm">Live Updates</p>
+              <p class="text-xs text-base-content/50 mt-1">
+                Portfolio changes stream in real-time
+              </p>
             </div>
           </div>
         </div>
@@ -123,6 +225,11 @@ defmodule PulseWeb.DashboardLive do
     </Layouts.app>
     """
   end
+
+  defp rank_style(0), do: "bg-amber-500/20 text-amber-600 dark:text-amber-400"
+  defp rank_style(1), do: "bg-gray-400/20 text-gray-500 dark:text-gray-400"
+  defp rank_style(2), do: "bg-orange-500/20 text-orange-600 dark:text-orange-400"
+  defp rank_style(_), do: "bg-base-300 text-base-content/50"
 
   defp format_currency(value) when is_number(value) do
     "$#{:erlang.float_to_binary(value * 1.0, decimals: 2)}"

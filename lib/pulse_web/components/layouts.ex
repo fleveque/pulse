@@ -39,6 +39,7 @@ defmodule PulseWeb.Layouts do
       <header class="navbar bg-base-200 border-b border-base-300 px-4 sm:px-6 lg:px-8">
         <div class="flex-1">
           <a href="/" class="flex items-center gap-2">
+            <.quantic_logo size={28} />
             <span class="text-lg font-bold tracking-tight">Pulse</span>
             <span class="badge badge-sm badge-ghost font-mono">beta</span>
           </a>
@@ -64,6 +65,7 @@ defmodule PulseWeb.Layouts do
       <footer class="border-t border-base-300 bg-base-200 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <div class="mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-4">
           <div class="flex items-center gap-2">
+            <.quantic_logo size={20} />
             <span class="font-bold tracking-tight">Pulse</span>
             <span class="text-base-content/50 text-sm">Community portfolios</span>
           </div>
@@ -143,6 +145,34 @@ defmodule PulseWeb.Layouts do
 
   See <head> in root.html.heex which applies the theme before page load.
   """
+  attr :size, :integer, default: 32
+
+  def quantic_logo(assigns) do
+    ~H"""
+    <svg width={@size} height={@size} viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id={"emerald-grad-#{@size}"} x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" style="stop-color:#047857" />
+          <stop offset="100%" style="stop-color:#10b981" />
+        </linearGradient>
+      </defs>
+      <circle cx="256" cy="256" r="240" fill={"url(#emerald-grad-#{@size})"} />
+      <rect x="120" y="280" width="60" height="100" rx="8" fill="white" opacity="0.9" />
+      <rect x="200" y="220" width="60" height="160" rx="8" fill="white" opacity="0.9" />
+      <rect x="280" y="160" width="60" height="220" rx="8" fill="white" opacity="0.9" />
+      <path
+        d="M380 140 L380 260 M380 140 L340 180 M380 140 L420 180"
+        stroke="white"
+        stroke-width="24"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        fill="none"
+        opacity="0.95"
+      />
+    </svg>
+    """
+  end
+
   def theme_toggle(assigns) do
     ~H"""
     <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
