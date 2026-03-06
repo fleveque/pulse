@@ -56,16 +56,20 @@ defmodule PulseWeb.PortfolioLive do
       <div :if={!@not_found && @portfolio}>
         <%!-- Navigation --%>
         <div class="flex items-center justify-end gap-2 mb-4">
+          <button id="save-image-btn" phx-hook="SaveImage" class="btn btn-ghost btn-sm">
+            <.icon name="hero-camera-micro" class="size-4" />
+            <span data-label>Save Image</span>
+          </button>
           <button
-            id="share-btn"
-            phx-hook="ShareButton"
+            id="share-link-btn"
+            phx-hook="ShareLink"
             data-url={url(~p"/p/#{@slug}")}
             data-title={"#{@slug}'s Portfolio · Pulse"}
             data-text={"Check out #{@slug}'s dividend portfolio on Pulse"}
             class="btn btn-ghost btn-sm"
           >
             <.icon name="hero-share-micro" class="size-4" />
-            <span id="share-label">Share</span>
+            <span data-label>Share Link</span>
           </button>
           <.link navigate="/" class="btn btn-ghost btn-sm">
             <.icon name="hero-arrow-left-micro" class="size-4" /> Dashboard
