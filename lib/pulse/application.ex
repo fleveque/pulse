@@ -14,6 +14,7 @@ defmodule Pulse.Application do
       {Registry, keys: :unique, name: Pulse.PortfolioRegistry},
       {Pulse.PortfolioSupervisor, []},
       {Pulse.Store, []},
+      {Pulse.Analytics, []},
 
       # Dashboard aggregator (must start before NATS consumer)
       Pulse.DashboardAggregator,

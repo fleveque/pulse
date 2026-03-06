@@ -5,6 +5,7 @@ defmodule PulseWeb.PortfolioLive do
   def mount(%{"slug" => slug}, _session, socket) do
     if connected?(socket) do
       Phoenix.PubSub.subscribe(Pulse.PubSub, "portfolio:#{slug}")
+      Pulse.Analytics.track_visit(slug)
     end
 
     portfolio = fetch_portfolio(slug)
@@ -53,84 +54,91 @@ defmodule PulseWeb.PortfolioLive do
       </div>
 
       <div :if={!@not_found && @portfolio}>
-        <%!-- Header --%>
-        <div class="flex items-center justify-between mb-8">
-          <div>
-            <div class="flex items-center gap-3">
-              <span class="flex items-center justify-center size-12 rounded-full bg-primary/15 text-primary text-xl font-bold">
-                {@slug |> String.first() |> String.upcase()}
-              </span>
-              <div>
-                <h1 class="text-2xl font-bold">{@slug}</h1>
-                <p class="text-base-content/50 text-sm">
-                  {length(@portfolio.holdings)} holdings
-                </p>
+        <%!-- Navigation --%>
+        <div class="flex items-center justify-end gap-2 mb-4">
+          <button
+            id="share-btn"
+            phx-hook="ShareButton"
+            data-url={url(~p"/p/#{@slug}")}
+            data-title={"#{@slug}'s Portfolio · Pulse"}
+            data-text={"Check out #{@slug}'s dividend portfolio on Pulse"}
+            class="btn btn-ghost btn-sm"
+          >
+            <.icon name="hero-share-micro" class="size-4" />
+            <span id="share-label">Share</span>
+          </button>
+          <.link navigate="/" class="btn btn-ghost btn-sm">
+            <.icon name="hero-arrow-left-micro" class="size-4" /> Dashboard
+          </.link>
+        </div>
+
+        <%!-- Capturable portfolio content --%>
+        <div id="portfolio-capture" class="p-4 rounded-2xl bg-base-100">
+          <%!-- Header --%>
+          <div class="flex items-center gap-3 mb-6">
+            <span class="flex items-center justify-center size-12 rounded-full bg-primary/15 text-primary text-xl font-bold">
+              {@slug |> String.first() |> String.upcase()}
+            </span>
+            <div>
+              <h1 class="text-2xl font-bold">{@slug}</h1>
+              <p class="text-base-content/50 text-sm">
+                {length(@portfolio.holdings)} holdings
+              </p>
+            </div>
+          </div>
+
+          <%!-- Allocation Bar --%>
+          <div
+            :if={length(@portfolio.metrics[:allocations] || []) > 0}
+            class="mb-6"
+          >
+            <div class="flex rounded-full overflow-hidden h-4 bg-base-300">
+              <div
+                :for={
+                  {alloc, idx} <-
+                    Enum.with_index(sorted_allocations(@portfolio.metrics[:allocations]))
+                }
+                class={"h-full " <> allocation_color(idx)}
+                style={"width: #{alloc.percentage}%"}
+                title={"#{alloc.symbol}: #{alloc.percentage}%"}
+              >
               </div>
             </div>
           </div>
-          <div class="flex items-center gap-2">
-            <button
-              id="share-btn"
-              phx-hook="ShareButton"
-              data-url={url(~p"/p/#{@slug}")}
-              data-title={"#{@slug}'s Portfolio · Pulse"}
-              data-text={"Check out #{@slug}'s dividend portfolio on Pulse"}
-              class="btn btn-ghost btn-sm"
-            >
-              <.icon name="hero-share-micro" class="size-4" />
-              <span id="share-label">Share</span>
-            </button>
-            <.link navigate="/" class="btn btn-ghost btn-sm">
-              <.icon name="hero-arrow-left-micro" class="size-4" /> Dashboard
-            </.link>
-          </div>
-        </div>
 
-        <%!-- Allocation Bar --%>
-        <div
-          :if={length(@portfolio.metrics[:allocations] || []) > 0}
-          class="mb-8"
-        >
-          <div class="flex rounded-full overflow-hidden h-4 bg-base-300">
+          <%!-- Stock Grid --%>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
             <div
               :for={
                 {alloc, idx} <-
                   Enum.with_index(sorted_allocations(@portfolio.metrics[:allocations]))
               }
-              class={"h-full " <> allocation_color(idx)}
-              style={"width: #{alloc.percentage}%"}
-              title={"#{alloc.symbol}: #{alloc.percentage}%"}
+              class="card bg-base-200 border border-base-300"
             >
-            </div>
-          </div>
-        </div>
-
-        <%!-- Stock Grid --%>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          <div
-            :for={
-              {alloc, idx} <-
-                Enum.with_index(sorted_allocations(@portfolio.metrics[:allocations]))
-            }
-            class="card bg-base-200 border border-base-300 hover:border-primary/30 transition-colors"
-          >
-            <div class="card-body p-4 items-center text-center">
-              <div class="mb-2">
-                <.stock_logo symbol={alloc.symbol} />
-              </div>
-              <p class="font-bold text-sm">{alloc.symbol}</p>
-              <div class="flex items-center gap-1.5">
-                <div class={"w-2.5 h-2.5 rounded-full flex-shrink-0 " <> allocation_color(idx)}></div>
-                <span class="text-lg font-bold tabular-nums">{alloc.percentage}%</span>
+              <div class="card-body p-4 items-center text-center">
+                <div class="mb-2">
+                  <.stock_logo symbol={alloc.symbol} />
+                </div>
+                <p class="font-bold text-sm">{alloc.symbol}</p>
+                <div class="flex items-center gap-1.5">
+                  <div class={"w-2.5 h-2.5 rounded-full flex-shrink-0 " <> allocation_color(idx)}>
+                  </div>
+                  <span class="text-lg font-bold tabular-nums">{alloc.percentage}%</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <%!-- Empty state --%>
-        <div :if={@portfolio.holdings == []} class="text-center py-12">
-          <.icon name="hero-chart-pie" class="size-12 mx-auto text-base-content/20 mb-3" />
-          <p class="text-base-content/50">This portfolio has no holdings yet.</p>
+          <%!-- Branding footer for screenshot --%>
+          <div class="mt-4 text-center text-xs text-base-content/30">
+            pulse.quantic.es
+          </div>
+
+          <%!-- Empty state --%>
+          <div :if={@portfolio.holdings == []} class="text-center py-12">
+            <.icon name="hero-chart-pie" class="size-12 mx-auto text-base-content/20 mb-3" />
+            <p class="text-base-content/50">This portfolio has no holdings yet.</p>
+          </div>
         </div>
       </div>
     </Layouts.app>

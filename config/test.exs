@@ -14,6 +14,9 @@ config :pulse, :nats,
 
 config :pulse, :nats_env_prefix, "test"
 
+# Use separate data directory so tests don't wipe dev data
+config :pulse, :data_dir, "priv/data/test"
+
 # Print only warnings and errors during test
 config :logger, level: :warning
 

@@ -13,6 +13,8 @@ defmodule PulseWeb.DashboardLive do
       "Real-time community dividend portfolio dashboard. " <>
         "#{stats.portfolio_count} portfolios tracking #{stats.total_holdings} holdings."
 
+    top_visited = Pulse.Analytics.top_visited(5)
+
     {:ok,
      assign(socket,
        page_title: "Community Dashboard",
@@ -21,8 +23,10 @@ defmodule PulseWeb.DashboardLive do
        portfolio_count: stats.portfolio_count,
        total_holdings: stats.total_holdings,
        total_value: stats.total_value,
+       show_value: stats.portfolio_count > 5 and stats.total_value > 100_000,
        popular_stocks: stats.popular_stocks,
-       portfolio_slugs: stats.portfolio_slugs
+       portfolio_slugs: stats.portfolio_slugs,
+       top_visited: top_visited
      )}
   end
 
@@ -33,6 +37,7 @@ defmodule PulseWeb.DashboardLive do
        portfolio_count: stats.portfolio_count,
        total_holdings: stats.total_holdings,
        total_value: stats.total_value,
+       show_value: stats.portfolio_count > 5 and stats.total_value > 100_000,
        popular_stocks: stats.popular_stocks,
        portfolio_slugs: stats.portfolio_slugs
      )}
@@ -100,20 +105,28 @@ defmodule PulseWeb.DashboardLive do
           <div class="card-body p-5">
             <div class="flex items-center gap-3">
               <div class="rounded-xl bg-amber-500/15 p-2.5">
-                <.icon name="hero-banknotes" class="size-5 text-amber-600 dark:text-amber-400" />
+                <.icon
+                  name={if @show_value, do: "hero-banknotes", else: "hero-eye-slash"}
+                  class="size-5 text-amber-600 dark:text-amber-400"
+                />
               </div>
               <div>
                 <p class="text-xs text-base-content/50 uppercase tracking-wider font-semibold">
                   Community Value
                 </p>
-                <p class="text-2xl font-bold">{format_currency(@total_value)}</p>
+                <p :if={@show_value} class="text-2xl font-bold">
+                  {format_currency_no_decimals(@total_value)}
+                </p>
+                <p :if={!@show_value} class="text-sm text-base-content/40 mt-1">
+                  Available soon
+                </p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <%!-- Popular Stocks --%>
         <div class="card bg-base-200 border border-base-300">
           <div class="card-body p-5">
@@ -157,12 +170,12 @@ defmodule PulseWeb.DashboardLive do
           </div>
         </div>
 
-        <%!-- Shared Portfolios --%>
+        <%!-- Latest Portfolios --%>
         <div class="card bg-base-200 border border-base-300">
           <div class="card-body p-5">
             <div class="flex items-center gap-2 mb-4">
               <.icon name="hero-briefcase" class="size-5 text-primary" />
-              <h2 class="text-lg font-bold">Shared Portfolios</h2>
+              <h2 class="text-lg font-bold">Latest Portfolios</h2>
             </div>
             <div :if={@portfolio_slugs == []} class="py-8 text-center">
               <.icon name="hero-briefcase" class="size-12 mx-auto text-base-content/20 mb-3" />
@@ -173,7 +186,7 @@ defmodule PulseWeb.DashboardLive do
                 settings
               </p>
             </div>
-            <div :if={@portfolio_slugs != []} class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div :if={@portfolio_slugs != []} class="space-y-2">
               <.link
                 :for={slug <- @portfolio_slugs}
                 navigate={~p"/p/#{slug}"}
@@ -182,11 +195,54 @@ defmodule PulseWeb.DashboardLive do
                 <span class="flex items-center justify-center size-8 rounded-full bg-primary/15 text-primary text-sm font-bold">
                   {slug |> String.first() |> String.upcase()}
                 </span>
-                <span class="font-medium group-hover:text-primary transition-colors">{slug}</span>
+                <span class="font-medium flex-1 group-hover:text-primary transition-colors">
+                  {slug}
+                </span>
                 <.icon
                   name="hero-arrow-right-micro"
                   class="size-4 ml-auto text-base-content/30 group-hover:text-primary transition-colors"
                 />
+              </.link>
+            </div>
+          </div>
+        </div>
+
+        <%!-- Most Visited This Week --%>
+        <div class="card bg-base-200 border border-base-300">
+          <div class="card-body p-5">
+            <div class="flex items-center gap-2 mb-4">
+              <.icon name="hero-eye" class="size-5 text-violet-500" />
+              <h2 class="text-lg font-bold">Trending This Week</h2>
+            </div>
+            <div :if={@top_visited == []} class="py-8 text-center">
+              <.icon name="hero-eye" class="size-12 mx-auto text-base-content/20 mb-3" />
+              <p class="text-base-content/50 text-sm">No visits yet</p>
+              <p class="text-base-content/40 text-xs mt-1">
+                Visit a portfolio to see it here
+              </p>
+            </div>
+            <div :if={@top_visited != []} class="space-y-2">
+              <.link
+                :for={{entry, idx} <- Enum.with_index(@top_visited)}
+                navigate={~p"/p/#{entry.slug}"}
+                class="flex items-center gap-3 rounded-lg bg-base-300/50 px-3 py-2.5 hover:bg-violet-500/10 transition-colors group"
+              >
+                <span class={[
+                  "flex items-center justify-center size-7 rounded-full text-xs font-bold",
+                  rank_style(idx)
+                ]}>
+                  {idx + 1}
+                </span>
+                <span class="flex items-center justify-center size-8 rounded-full bg-primary/15 text-primary text-sm font-bold">
+                  {entry.slug |> String.first() |> String.upcase()}
+                </span>
+                <span class="font-medium flex-1 group-hover:text-violet-500 transition-colors">
+                  {entry.slug}
+                </span>
+                <span class="text-sm text-base-content/50 flex items-center gap-1">
+                  <.icon name="hero-eye-micro" class="size-3.5" />
+                  {entry.visits}
+                </span>
               </.link>
             </div>
           </div>
@@ -237,11 +293,11 @@ defmodule PulseWeb.DashboardLive do
   defp rank_style(2), do: "bg-orange-500/20 text-orange-600 dark:text-orange-400"
   defp rank_style(_), do: "bg-base-300 text-base-content/50"
 
-  defp format_currency(value) when is_number(value) do
-    "$#{:erlang.float_to_binary(value * 1.0, decimals: 2)}"
+  defp format_currency_no_decimals(value) when is_number(value) do
+    "$#{trunc(value)}"
   end
 
-  defp format_currency(_), do: "$0.00"
+  defp format_currency_no_decimals(_), do: "$0"
 
   defp format_number(value) when is_float(value) do
     if value == Float.floor(value) do

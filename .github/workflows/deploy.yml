@@ -19,6 +19,7 @@ jobs:
       DOCKER_BUILDKIT: 1
       KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
       SECRET_KEY_BASE: ${{ secrets.SECRET_KEY_BASE }}
+      LOGO_SERVICE_API_KEY: ${{ secrets.LOGO_SERVICE_API_KEY }}
 
     steps:
       - name: Checkout code
