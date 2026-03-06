@@ -23,6 +23,7 @@ defmodule PulseWeb.Components.StockLogo do
         :if={@has_service}
         src={@logo_url}
         alt={@symbol}
+        crossorigin="anonymous"
         class="w-full h-full object-contain"
         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
       />
