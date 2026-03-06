@@ -25,11 +25,34 @@ import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/pulse"
 import topbar from "../vendor/topbar"
 
+const ShareButton = {
+  mounted() {
+    this.el.addEventListener("click", () => {
+      const url = this.el.dataset.url
+      const title = this.el.dataset.title
+      const text = this.el.dataset.text
+
+      if (navigator.share) {
+        navigator.share({ url, title, text }).catch(() => {})
+      } else {
+        navigator.clipboard.writeText(url).then(() => {
+          const label = document.getElementById("share-label")
+          if (label) {
+            const original = label.textContent
+            label.textContent = "Link copied!"
+            setTimeout(() => { label.textContent = original }, 2000)
+          }
+        })
+      }
+    })
+  }
+}
+
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks},
+  hooks: {...colocatedHooks, ShareButton},
 })
 
 // Show progress bar on live navigation and form submits

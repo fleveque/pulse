@@ -34,6 +34,10 @@ env:
     NATS_HOST: dividend-portfolio-nats
     NATS_PORT: "4222"
     NATS_ENV_PREFIX: prod
+    DATA_DIR: /app/data
+
+volumes:
+  - pulse_data:/app/data
 
 builder:
   arch: arm64

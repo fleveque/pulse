@@ -9,9 +9,15 @@ defmodule PulseWeb.DashboardLive do
 
     stats = Pulse.DashboardAggregator.get_stats()
 
+    description =
+      "Real-time community dividend portfolio dashboard. " <>
+        "#{stats.portfolio_count} portfolios tracking #{stats.total_holdings} holdings."
+
     {:ok,
      assign(socket,
        page_title: "Community Dashboard",
+       meta_description: description,
+       meta_url: url(~p"/"),
        portfolio_count: stats.portfolio_count,
        total_holdings: stats.total_holdings,
        total_value: stats.total_value,

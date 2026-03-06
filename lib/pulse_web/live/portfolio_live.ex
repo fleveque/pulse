@@ -9,9 +9,16 @@ defmodule PulseWeb.PortfolioLive do
 
     portfolio = fetch_portfolio(slug)
 
+    holding_count =
+      if portfolio, do: length(portfolio.holdings), else: 0
+
+    description = "#{slug}'s dividend portfolio on Pulse — #{holding_count} holdings"
+
     {:ok,
      assign(socket,
        page_title: "#{slug}'s Portfolio",
+       meta_description: description,
+       meta_url: url(~p"/p/#{slug}"),
        slug: slug,
        portfolio: portfolio,
        not_found: is_nil(portfolio)
@@ -61,9 +68,22 @@ defmodule PulseWeb.PortfolioLive do
               </div>
             </div>
           </div>
-          <.link navigate="/" class="btn btn-ghost btn-sm">
-            <.icon name="hero-arrow-left-micro" class="size-4" /> Dashboard
-          </.link>
+          <div class="flex items-center gap-2">
+            <button
+              id="share-btn"
+              phx-hook="ShareButton"
+              data-url={url(~p"/p/#{@slug}")}
+              data-title={"#{@slug}'s Portfolio · Pulse"}
+              data-text={"Check out #{@slug}'s dividend portfolio on Pulse"}
+              class="btn btn-ghost btn-sm"
+            >
+              <.icon name="hero-share-micro" class="size-4" />
+              <span id="share-label">Share</span>
+            </button>
+            <.link navigate="/" class="btn btn-ghost btn-sm">
+              <.icon name="hero-arrow-left-micro" class="size-4" /> Dashboard
+            </.link>
+          </div>
         </div>
 
         <%!-- Allocation Bar --%>

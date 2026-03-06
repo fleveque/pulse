@@ -67,6 +67,9 @@ ENV LC_ALL en_US.UTF-8
 WORKDIR "/app"
 RUN chown nobody /app
 
+# Create data directory for DETS persistence
+RUN mkdir -p /app/data && chown nobody:root /app/data
+
 # Set runner ENV
 ENV MIX_ENV="prod"
 
