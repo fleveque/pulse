@@ -13,7 +13,7 @@ config :pulse, PulseWeb.Endpoint, cache_static_manifest: "priv/static/cache_mani
 config :pulse, PulseWeb.Endpoint,
   force_ssl: [
     rewrite_on: [:x_forwarded_proto],
-    exclude: ["localhost", "127.0.0.1"]
+    exclude: [hosts: ["localhost", "127.0.0.1"], paths: ["/up"]]
   ]
 
 # Do not print debug messages in production
