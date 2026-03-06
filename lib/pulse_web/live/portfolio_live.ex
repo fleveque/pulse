@@ -134,8 +134,8 @@ defmodule PulseWeb.PortfolioLive do
           </div>
 
           <%!-- Branding footer for screenshot --%>
-          <div class="mt-4 flex items-center justify-center gap-1 text-xs text-base-content/30">
-            <Layouts.pulse_logo size={14} /> pulse.quantic.es
+          <div class="mt-4 text-center text-xs text-base-content/30">
+            ⚡ pulse.quantic.es
           </div>
 
           <%!-- Empty state --%>
