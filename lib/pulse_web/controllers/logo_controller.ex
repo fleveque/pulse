@@ -61,7 +61,15 @@ defmodule PulseWeb.LogoController do
       "#{service_url}/api/v1/logos/#{symbol}?size=m&api_key=#{api_key}"
       |> String.to_charlist()
 
-    case :httpc.request(:get, {url, []}, [timeout: 5_000, connect_timeout: 3_000], []) do
+    ssl_opts = [
+      ssl: [
+        verify: :verify_peer,
+        cacerts: :public_key.cacerts_get(),
+        depth: 3
+      ]
+    ]
+
+    case :httpc.request(:get, {url, []}, [timeout: 5_000, connect_timeout: 3_000] ++ ssl_opts, []) do
       {:ok, {{_http, 200, _status}, headers, body}} ->
         content_type =
           headers
