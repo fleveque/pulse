@@ -29,6 +29,11 @@ defmodule Pulse.Analytics do
     GenServer.call(__MODULE__, {:top_visited, limit})
   end
 
+  @doc "Remove a slug from analytics (e.g. on opt-out)."
+  def delete(slug) do
+    GenServer.cast(__MODULE__, {:delete, slug})
+  end
+
   # Server callbacks
 
   @impl true
@@ -55,6 +60,13 @@ defmodule Pulse.Analytics do
   def handle_cast({:track_visit, slug}, state) do
     count = :ets.update_counter(@ets_table, slug, {2, 1}, {slug, 0})
     :dets.insert(@dets_table, {slug, count})
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_cast({:delete, slug}, state) do
+    :ets.delete(@ets_table, slug)
+    :dets.delete(@dets_table, slug)
     {:noreply, state}
   end
 
