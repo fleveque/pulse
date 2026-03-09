@@ -9,8 +9,8 @@ ARG RUNNER_IMAGE="debian:${DEBIAN_CODENAME}-slim"
 
 FROM ${BUILDER_IMAGE} AS builder
 
-# Install build dependencies
-RUN apt-get update -y && apt-get install -y build-essential git \
+# Install build dependencies (nodejs/npm needed for JS packages used by esbuild)
+RUN apt-get update -y && apt-get install -y build-essential git nodejs npm \
     && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
 # Prepare build dir
@@ -38,6 +38,9 @@ COPY priv priv
 COPY lib lib
 COPY assets assets
 
+# Install JS dependencies (modern-screenshot used by esbuild)
+RUN cd assets && npm install --prefer-offline --no-audit --no-fund
+
 # Copy runtime config (needed for release)
 COPY config/runtime.exs config/
 
@@ -60,9 +63,9 @@ RUN apt-get update -y && \
 # Set the locale
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
 
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
 
 WORKDIR "/app"
 RUN chown nobody /app
