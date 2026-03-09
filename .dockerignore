@@ -12,6 +12,9 @@ erl_crash.dump
 # Static artifacts (rebuilt in Docker)
 /priv/static/assets/
 
+# JS dependencies (installed in Docker)
+/assets/node_modules/
+
 # Environment files
 /.env*
 
