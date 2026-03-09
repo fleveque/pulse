@@ -24,7 +24,22 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/pulse"
 import topbar from "../vendor/topbar"
-import html2canvas from "../vendor/html2canvas.min"
+import { domToBlob } from "modern-screenshot"
+
+async function capturePortfolio(target) {
+  target.classList.add("capture-mode")
+
+  // Wait one frame for layout to settle
+  await new Promise(r => requestAnimationFrame(r))
+
+  try {
+    const bg = getComputedStyle(target).backgroundColor
+    const blob = await domToBlob(target, { scale: 2, backgroundColor: bg })
+    return new File([blob], "portfolio.png", { type: "image/png" })
+  } finally {
+    target.classList.remove("capture-mode")
+  }
+}
 
 const SaveImage = {
   mounted() {
@@ -37,14 +52,7 @@ const SaveImage = {
       setLabel("Capturing...")
 
       try {
-        const canvas = await html2canvas(target, {
-          backgroundColor: null,
-          scale: 2,
-          useCORS: true,
-          logging: false,
-        })
-        const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"))
-        const file = new File([blob], "portfolio.png", { type: "image/png" })
+        const file = await capturePortfolio(target)
 
         // Try native share with image (works on most mobile browsers)
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -55,7 +63,7 @@ const SaveImage = {
 
         // Desktop fallback: download via anchor click
         const a = document.createElement("a")
-        a.href = URL.createObjectURL(blob)
+        a.href = URL.createObjectURL(file)
         a.download = "portfolio.png"
         a.click()
         URL.revokeObjectURL(a.href)
@@ -63,7 +71,7 @@ const SaveImage = {
         setTimeout(() => setLabel("Save Image"), 2000)
       } catch (e) {
         if (e.name === "AbortError") { setLabel("Save Image"); return }
-        console.error("SaveImage failed:", e)
+        console.error("SaveImage failed:", e, e.stack)
         setLabel("Failed")
         setTimeout(() => setLabel("Save Image"), 2000)
       }
@@ -84,14 +92,7 @@ const ShareLink = {
       if (target) {
         setLabel("Capturing...")
         try {
-          const canvas = await html2canvas(target, {
-            backgroundColor: null,
-            scale: 2,
-            useCORS: true,
-            logging: false,
-          })
-          const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"))
-          const file = new File([blob], "portfolio.png", { type: "image/png" })
+          const file = await capturePortfolio(target)
 
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
             await navigator.share({ files: [file], title, text, url })
