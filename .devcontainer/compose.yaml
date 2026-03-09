@@ -14,18 +14,10 @@ services:
 
     command: sleep infinity
 
-    depends_on:
-      - nats
+    networks:
+      - default
+      - shared-nats
 
-  nats:
-    image: nats:2-alpine
-    command: "--jetstream --store_dir /data --http_port 8222"
-    ports:
-      - "4222:4222"
-      - "8222:8222"
-    volumes:
-      - nats_data:/data
-    restart: unless-stopped
-
-volumes:
-  nats_data:
+networks:
+  shared-nats:
+    external: true

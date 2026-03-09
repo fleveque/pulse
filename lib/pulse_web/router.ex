@@ -17,6 +17,8 @@ defmodule PulseWeb.Router do
   scope "/", PulseWeb do
     pipe_through :browser
 
+    get "/logos/:symbol", LogoController, :show
+
     live "/", DashboardLive, :index
     live "/p/:slug", PortfolioLive, :show
   end

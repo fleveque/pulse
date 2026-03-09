@@ -111,7 +111,7 @@ defmodule PulseWeb.PortfolioLive do
           </div>
 
           <%!-- Stock Grid --%>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div class="capture-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
             <div
               :for={
                 {alloc, idx} <-
@@ -119,8 +119,8 @@ defmodule PulseWeb.PortfolioLive do
               }
               class="card bg-base-200 border border-base-300"
             >
-              <div class="card-body p-4 items-center text-center">
-                <div class="mb-2">
+              <div class="capture-card-body card-body p-4 items-center text-center">
+                <div class="capture-logo-wrap mb-2">
                   <.stock_logo symbol={alloc.symbol} />
                 </div>
                 <p class="font-bold text-sm">{alloc.symbol}</p>
@@ -134,8 +134,9 @@ defmodule PulseWeb.PortfolioLive do
           </div>
 
           <%!-- Branding footer for screenshot --%>
-          <div class="mt-4 text-center text-xs text-base-content/30">
-            ⚡ pulse.quantic.es
+          <div class="mt-4 flex items-center justify-center gap-1.5 text-xs text-base-content/30">
+            <Layouts.pulse_logo size={14} />
+            <span>pulse.quantic.es</span>
           </div>
 
           <%!-- Empty state --%>
