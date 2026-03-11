@@ -50,6 +50,9 @@ defmodule PulseWeb.Layouts do
               <a href="https://quantic.es" class="btn btn-ghost btn-sm">quantic.es</a>
             </li>
             <li>
+              <.language_toggle />
+            </li>
+            <li>
               <.theme_toggle />
             </li>
           </ul>
@@ -67,15 +70,15 @@ defmodule PulseWeb.Layouts do
           <div class="flex items-center gap-2">
             <.pulse_logo size={20} />
             <span class="font-bold tracking-tight">Pulse</span>
-            <span class="text-base-content/50 text-sm">Community portfolios</span>
+            <span class="text-base-content/50 text-sm">{gettext("Community portfolios")}</span>
           </div>
           <div class="text-center sm:text-right text-xs sm:text-sm text-base-content/60">
             <p>
-              Part of
+              {gettext("Part of")}
               <a href="https://quantic.es" class="hover:underline font-medium text-base-content/80">
                 quantic.es
               </a>
-              &middot; Built with Elixir and Phoenix LiveView
+              &middot; {gettext("Built with Elixir and Phoenix LiveView")}
             </p>
             <p class="mt-1">
               &copy; {DateTime.utc_now().year}
@@ -225,6 +228,27 @@ defmodule PulseWeb.Layouts do
         data-phx-theme="dark"
       >
         <.icon name="hero-moon-micro" class="size-4 opacity-75 hover:opacity-100" />
+      </button>
+    </div>
+    """
+  end
+
+  def language_toggle(assigns) do
+    ~H"""
+    <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
+      <button
+        class="flex px-2 py-1.5 cursor-pointer text-xs font-semibold opacity-75 hover:opacity-100"
+        phx-click={JS.dispatch("phx:set-locale")}
+        data-phx-locale="en"
+      >
+        EN
+      </button>
+      <button
+        class="flex px-2 py-1.5 cursor-pointer text-xs font-semibold opacity-75 hover:opacity-100"
+        phx-click={JS.dispatch("phx:set-locale")}
+        data-phx-locale="es"
+      >
+        ES
       </button>
     </div>
     """

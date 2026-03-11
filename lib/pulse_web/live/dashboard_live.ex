@@ -17,7 +17,7 @@ defmodule PulseWeb.DashboardLive do
 
     {:ok,
      assign(socket,
-       page_title: "Community Dashboard",
+       page_title: gettext("Community Dashboard"),
        meta_description: description,
        meta_url: url(~p"/"),
        portfolio_count: stats.portfolio_count,
@@ -63,7 +63,7 @@ defmodule PulseWeb.DashboardLive do
           Pulse
         </h1>
         <p class="text-base-content/50 mt-2 text-lg">
-          Real-time community dividend portfolio dashboard
+          {gettext("Real-time community dividend portfolio dashboard")}
         </p>
       </div>
 
@@ -77,7 +77,7 @@ defmodule PulseWeb.DashboardLive do
               </div>
               <div>
                 <p class="text-xs text-base-content/50 uppercase tracking-wider font-semibold">
-                  Portfolios
+                  {gettext("Portfolios")}
                 </p>
                 <p class="text-2xl font-bold">{@portfolio_count}</p>
               </div>
@@ -93,7 +93,7 @@ defmodule PulseWeb.DashboardLive do
               </div>
               <div>
                 <p class="text-xs text-base-content/50 uppercase tracking-wider font-semibold">
-                  Holdings
+                  {gettext("Holdings")}
                 </p>
                 <p class="text-2xl font-bold">{@total_holdings}</p>
               </div>
@@ -112,13 +112,13 @@ defmodule PulseWeb.DashboardLive do
               </div>
               <div>
                 <p class="text-xs text-base-content/50 uppercase tracking-wider font-semibold">
-                  Community Value
+                  {gettext("Community Value")}
                 </p>
                 <p :if={@show_value} class="text-2xl font-bold">
                   {format_currency_no_decimals(@total_value)}
                 </p>
                 <p :if={!@show_value} class="text-sm text-base-content/40 mt-1">
-                  Available soon
+                  {gettext("Available soon")}
                 </p>
               </div>
             </div>
@@ -132,13 +132,13 @@ defmodule PulseWeb.DashboardLive do
           <div class="card-body p-5">
             <div class="flex items-center gap-2 mb-4">
               <.icon name="hero-fire" class="size-5 text-orange-500" />
-              <h2 class="text-lg font-bold">Popular Stocks</h2>
+              <h2 class="text-lg font-bold">{gettext("Popular Stocks")}</h2>
             </div>
             <div :if={@popular_stocks == []} class="py-8 text-center">
               <.icon name="hero-chart-bar" class="size-12 mx-auto text-base-content/20 mb-3" />
-              <p class="text-base-content/50 text-sm">No stocks yet</p>
+              <p class="text-base-content/50 text-sm">{gettext("No stocks yet")}</p>
               <p class="text-base-content/40 text-xs mt-1">
-                Share your portfolio from
+                {gettext("Share your portfolio from")}
                 <a href="https://quantic.es" class="link link-primary">quantic.es</a>
               </p>
             </div>
@@ -175,15 +175,15 @@ defmodule PulseWeb.DashboardLive do
           <div class="card-body p-5">
             <div class="flex items-center gap-2 mb-4">
               <.icon name="hero-briefcase" class="size-5 text-primary" />
-              <h2 class="text-lg font-bold">Latest Portfolios</h2>
+              <h2 class="text-lg font-bold">{gettext("Latest Portfolios")}</h2>
             </div>
             <div :if={@portfolio_slugs == []} class="py-8 text-center">
               <.icon name="hero-briefcase" class="size-12 mx-auto text-base-content/20 mb-3" />
-              <p class="text-base-content/50 text-sm">No portfolios shared yet</p>
+              <p class="text-base-content/50 text-sm">{gettext("No portfolios shared yet")}</p>
               <p class="text-base-content/40 text-xs mt-1">
-                Enable sharing in your
+                {gettext("Enable sharing in your")}
                 <a href="https://quantic.es" class="link link-primary">quantic.es</a>
-                settings
+                {gettext("settings")}
               </p>
             </div>
             <div :if={@portfolio_slugs != []} class="space-y-2">
@@ -212,13 +212,13 @@ defmodule PulseWeb.DashboardLive do
           <div class="card-body p-5">
             <div class="flex items-center gap-2 mb-4">
               <.icon name="hero-eye" class="size-5 text-violet-500" />
-              <h2 class="text-lg font-bold">Trending This Week</h2>
+              <h2 class="text-lg font-bold">{gettext("Trending This Week")}</h2>
             </div>
             <div :if={@top_visited == []} class="py-8 text-center">
               <.icon name="hero-eye" class="size-12 mx-auto text-base-content/20 mb-3" />
-              <p class="text-base-content/50 text-sm">No visits yet</p>
+              <p class="text-base-content/50 text-sm">{gettext("No visits yet")}</p>
               <p class="text-base-content/40 text-xs mt-1">
-                Visit a portfolio to see it here
+                {gettext("Visit a portfolio to see it here")}
               </p>
             </div>
             <div :if={@top_visited != []} class="space-y-2">
@@ -252,15 +252,15 @@ defmodule PulseWeb.DashboardLive do
       <%!-- How It Works --%>
       <div class="mt-10 card bg-base-200 border border-base-300">
         <div class="card-body p-6">
-          <h2 class="text-lg font-bold mb-4 text-center">How It Works</h2>
+          <h2 class="text-lg font-bold mb-4 text-center">{gettext("How It Works")}</h2>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
             <div>
               <div class="rounded-full bg-primary/10 size-12 flex items-center justify-center mx-auto mb-3">
                 <.icon name="hero-plus-circle" class="size-6 text-primary" />
               </div>
-              <p class="font-semibold text-sm">Build Your Portfolio</p>
+              <p class="font-semibold text-sm">{gettext("Build Your Portfolio")}</p>
               <p class="text-xs text-base-content/50 mt-1">
-                Track your holdings on
+                {gettext("Track your holdings on")}
                 <a
                   href="https://quantic.es"
                   target="_blank"
@@ -275,18 +275,18 @@ defmodule PulseWeb.DashboardLive do
               <div class="rounded-full bg-primary/10 size-12 flex items-center justify-center mx-auto mb-3">
                 <.icon name="hero-share" class="size-6 text-primary" />
               </div>
-              <p class="font-semibold text-sm">Share It</p>
+              <p class="font-semibold text-sm">{gettext("Share It")}</p>
               <p class="text-xs text-base-content/50 mt-1">
-                Enable sharing in settings to go public
+                {gettext("Enable sharing in settings to go public")}
               </p>
             </div>
             <div>
               <div class="rounded-full bg-primary/10 size-12 flex items-center justify-center mx-auto mb-3">
                 <.icon name="hero-signal" class="size-6 text-primary" />
               </div>
-              <p class="font-semibold text-sm">Live Updates</p>
+              <p class="font-semibold text-sm">{gettext("Live Updates")}</p>
               <p class="text-xs text-base-content/50 mt-1">
-                Portfolio changes stream in real-time
+                {gettext("Portfolio changes stream in real-time")}
               </p>
             </div>
           </div>

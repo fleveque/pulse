@@ -44,21 +44,31 @@ defmodule PulseWeb.PortfolioLive do
     <Layouts.app flash={@flash}>
       <div :if={@not_found} class="text-center py-16">
         <.icon name="hero-briefcase" class="size-16 mx-auto text-base-content/20 mb-4" />
-        <h1 class="text-2xl font-bold text-base-content/40 mb-2">Portfolio not found</h1>
+        <h1 class="text-2xl font-bold text-base-content/40 mb-2">{gettext("Portfolio not found")}</h1>
         <p class="text-base-content/50">
-          The portfolio "{@slug}" doesn't exist or hasn't been shared yet.
+          {gettext("The portfolio \"%{slug}\" doesn't exist or hasn't been shared yet.",
+            slug: @slug
+          )}
         </p>
         <.link navigate="/" class="btn btn-primary btn-sm mt-4">
-          Back to dashboard
+          {gettext("Back to dashboard")}
         </.link>
       </div>
 
       <div :if={!@not_found && @portfolio}>
         <%!-- Navigation --%>
         <div class="flex items-center justify-end gap-2 mb-4">
-          <button id="save-image-btn" phx-hook="SaveImage" class="btn btn-ghost btn-sm">
+          <button
+            id="save-image-btn"
+            phx-hook="SaveImage"
+            data-label-default={gettext("Save Image")}
+            data-label-capturing={gettext("Capturing...")}
+            data-label-saved={gettext("Saved!")}
+            data-label-failed={gettext("Failed")}
+            class="btn btn-ghost btn-sm"
+          >
             <.icon name="hero-camera-micro" class="size-4" />
-            <span data-label>Save Image</span>
+            <span data-label>{gettext("Save Image")}</span>
           </button>
           <button
             id="share-link-btn"
@@ -66,13 +76,16 @@ defmodule PulseWeb.PortfolioLive do
             data-url={url(~p"/p/#{@slug}")}
             data-title={"#{@slug}'s Portfolio · Pulse"}
             data-text={"Check out #{@slug}'s dividend portfolio on Pulse"}
+            data-label-default={gettext("Share Link")}
+            data-label-capturing={gettext("Capturing...")}
+            data-label-copied={gettext("Copied!")}
             class="btn btn-ghost btn-sm"
           >
             <.icon name="hero-share-micro" class="size-4" />
-            <span data-label>Share Link</span>
+            <span data-label>{gettext("Share Link")}</span>
           </button>
           <.link navigate="/" class="btn btn-ghost btn-sm">
-            <.icon name="hero-arrow-left-micro" class="size-4" /> Dashboard
+            <.icon name="hero-arrow-left-micro" class="size-4" /> {gettext("Dashboard")}
           </.link>
         </div>
 
@@ -86,7 +99,7 @@ defmodule PulseWeb.PortfolioLive do
             <div>
               <h1 class="text-2xl font-bold">{@slug}</h1>
               <p class="text-base-content/50 text-sm">
-                {length(@portfolio.holdings)} holdings
+                {ngettext("1 holding", "%{count} holdings", length(@portfolio.holdings))}
               </p>
             </div>
           </div>
@@ -142,7 +155,7 @@ defmodule PulseWeb.PortfolioLive do
           <%!-- Empty state --%>
           <div :if={@portfolio.holdings == []} class="text-center py-12">
             <.icon name="hero-chart-pie" class="size-12 mx-auto text-base-content/20 mb-3" />
-            <p class="text-base-content/50">This portfolio has no holdings yet.</p>
+            <p class="text-base-content/50">{gettext("This portfolio has no holdings yet.")}</p>
           </div>
         </div>
       </div>

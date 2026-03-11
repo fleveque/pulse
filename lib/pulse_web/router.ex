@@ -8,6 +8,7 @@ defmodule PulseWeb.Router do
     plug :put_root_layout, html: {PulseWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug PulseWeb.Plugs.SetLocale
   end
 
   pipeline :api do
@@ -19,8 +20,10 @@ defmodule PulseWeb.Router do
 
     get "/logos/:symbol", LogoController, :show
 
-    live "/", DashboardLive, :index
-    live "/p/:slug", PortfolioLive, :show
+    live_session :default, on_mount: [PulseWeb.Live.Hooks.SetLocale] do
+      live "/", DashboardLive, :index
+      live "/p/:slug", PortfolioLive, :show
+    end
   end
 
   # Enable LiveDashboard in development

@@ -45,11 +45,15 @@ const SaveImage = {
   mounted() {
     this.el.addEventListener("click", async () => {
       const label = this.el.querySelector("[data-label]")
+      const defaultLabel = this.el.dataset.labelDefault || "Save Image"
+      const capturingLabel = this.el.dataset.labelCapturing || "Capturing..."
+      const savedLabel = this.el.dataset.labelSaved || "Saved!"
+      const failedLabel = this.el.dataset.labelFailed || "Failed"
       const setLabel = (msg) => { if (label) label.textContent = msg }
       const target = document.getElementById("portfolio-capture")
       if (!target) return
 
-      setLabel("Capturing...")
+      setLabel(capturingLabel)
 
       try {
         const file = await capturePortfolio(target)
@@ -57,7 +61,7 @@ const SaveImage = {
         // Try native share with image (works on most mobile browsers)
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({ files: [file] })
-          setLabel("Save Image")
+          setLabel(defaultLabel)
           return
         }
 
@@ -67,13 +71,13 @@ const SaveImage = {
         a.download = "portfolio.png"
         a.click()
         URL.revokeObjectURL(a.href)
-        setLabel("Saved!")
-        setTimeout(() => setLabel("Save Image"), 2000)
+        setLabel(savedLabel)
+        setTimeout(() => setLabel(defaultLabel), 2000)
       } catch (e) {
-        if (e.name === "AbortError") { setLabel("Save Image"); return }
+        if (e.name === "AbortError") { setLabel(defaultLabel); return }
         console.error("SaveImage failed:", e, e.stack)
-        setLabel("Failed")
-        setTimeout(() => setLabel("Save Image"), 2000)
+        setLabel(failedLabel)
+        setTimeout(() => setLabel(defaultLabel), 2000)
       }
     })
   }
@@ -86,21 +90,24 @@ const ShareLink = {
       const title = this.el.dataset.title
       const text = this.el.dataset.text
       const label = this.el.querySelector("[data-label]")
+      const defaultLabel = this.el.dataset.labelDefault || "Share Link"
+      const capturingLabel = this.el.dataset.labelCapturing || "Capturing..."
+      const copiedLabel = this.el.dataset.labelCopied || "Copied!"
       const setLabel = (msg) => { if (label) label.textContent = msg }
       const target = document.getElementById("portfolio-capture")
 
       if (target) {
-        setLabel("Capturing...")
+        setLabel(capturingLabel)
         try {
           const file = await capturePortfolio(target)
 
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
             await navigator.share({ files: [file], title, text, url })
-            setLabel("Share")
+            setLabel(defaultLabel)
             return
           }
         } catch (e) {
-          if (e.name === "AbortError") { setLabel("Share"); return }
+          if (e.name === "AbortError") { setLabel(defaultLabel); return }
         }
       }
 
@@ -111,19 +118,20 @@ const ShareLink = {
         } catch (_e) { /* user cancelled */ }
       } else {
         await navigator.clipboard.writeText(url)
-        setLabel("Copied!")
-        setTimeout(() => setLabel("Share"), 2000)
+        setLabel(copiedLabel)
+        setTimeout(() => setLabel(defaultLabel), 2000)
         return
       }
-      setLabel("Share")
+      setLabel(defaultLabel)
     })
   }
 }
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
+const locale = localStorage.getItem("pulse-lang") || document.documentElement.lang || "en"
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
-  params: {_csrf_token: csrfToken},
+  params: {_csrf_token: csrfToken, locale: locale},
   hooks: {...colocatedHooks, SaveImage, ShareLink},
 })
 
