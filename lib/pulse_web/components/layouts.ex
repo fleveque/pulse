@@ -41,7 +41,6 @@ defmodule PulseWeb.Layouts do
           <a href="/" class="flex items-center gap-2">
             <.pulse_logo size={28} />
             <span class="text-lg font-bold tracking-tight">Pulse</span>
-            <span class="badge badge-sm badge-ghost font-mono">beta</span>
           </a>
         </div>
         <div class="flex-none">
