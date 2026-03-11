@@ -1,0 +1,233 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: es\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: lib/pulse_web/live/portfolio_live.ex:102
+#, elixir-autogen, elixir-format
+msgid "1 holding"
+msgid_plural "%{count} holdings"
+msgstr[0] "1 posición"
+msgstr[1] "%{count} posiciones"
+
+#: lib/pulse_web/components/core_components.ex:368
+#, elixir-autogen, elixir-format
+msgid "Actions"
+msgstr "Acciones"
+
+#: lib/pulse_web/components/layouts.ex:127
+#: lib/pulse_web/components/layouts.ex:139
+#, elixir-autogen, elixir-format
+msgid "Attempting to reconnect"
+msgstr "Intentando reconectar"
+
+#: lib/pulse_web/live/dashboard_live.ex:121
+#, elixir-autogen, elixir-format
+msgid "Available soon"
+msgstr "Disponible pronto"
+
+#: lib/pulse_web/live/portfolio_live.ex:54
+#, elixir-autogen, elixir-format
+msgid "Back to dashboard"
+msgstr "Volver al panel"
+
+#: lib/pulse_web/live/dashboard_live.ex:261
+#, elixir-autogen, elixir-format
+msgid "Build Your Portfolio"
+msgstr "Construye tu Cartera"
+
+#: lib/pulse_web/components/layouts.ex:81
+#, elixir-autogen, elixir-format
+msgid "Built with Elixir and Phoenix LiveView"
+msgstr "Hecho con Elixir y Phoenix LiveView"
+
+#: lib/pulse_web/live/portfolio_live.ex:65
+#: lib/pulse_web/live/portfolio_live.ex:80
+#, elixir-autogen, elixir-format
+msgid "Capturing..."
+msgstr "Capturando..."
+
+#: lib/pulse_web/live/dashboard_live.ex:20
+#, elixir-autogen, elixir-format
+msgid "Community Dashboard"
+msgstr "Panel de la Comunidad"
+
+#: lib/pulse_web/live/dashboard_live.ex:115
+#, elixir-autogen, elixir-format
+msgid "Community Value"
+msgstr "Valor de la Comunidad"
+
+#: lib/pulse_web/components/layouts.ex:73
+#, elixir-autogen, elixir-format
+msgid "Community portfolios"
+msgstr "Carteras de la comunidad"
+
+#: lib/pulse_web/live/portfolio_live.ex:81
+#, elixir-autogen, elixir-format
+msgid "Copied!"
+msgstr "¡Copiado!"
+
+#: lib/pulse_web/live/portfolio_live.ex:88
+#, elixir-autogen, elixir-format
+msgid "Dashboard"
+msgstr "Panel"
+
+#: lib/pulse_web/live/dashboard_live.ex:280
+#, elixir-autogen, elixir-format
+msgid "Enable sharing in settings to go public"
+msgstr "Activa la opción de compartir en ajustes para hacerla pública"
+
+#: lib/pulse_web/live/dashboard_live.ex:184
+#, elixir-autogen, elixir-format
+msgid "Enable sharing in your"
+msgstr "Activa compartir en tu"
+
+#: lib/pulse_web/live/portfolio_live.ex:67
+#, elixir-autogen, elixir-format
+msgid "Failed"
+msgstr "Error"
+
+#: lib/pulse_web/live/dashboard_live.ex:96
+#, elixir-autogen, elixir-format
+msgid "Holdings"
+msgstr "Posiciones"
+
+#: lib/pulse_web/live/dashboard_live.ex:255
+#, elixir-autogen, elixir-format
+msgid "How It Works"
+msgstr "Cómo Funciona"
+
+#: lib/pulse_web/live/dashboard_live.ex:178
+#, elixir-autogen, elixir-format
+msgid "Latest Portfolios"
+msgstr "Últimas Carteras"
+
+#: lib/pulse_web/live/dashboard_live.ex:287
+#, elixir-autogen, elixir-format
+msgid "Live Updates"
+msgstr "Actualizaciones en Vivo"
+
+#: lib/pulse_web/live/dashboard_live.ex:182
+#, elixir-autogen, elixir-format
+msgid "No portfolios shared yet"
+msgstr "Aún no hay carteras compartidas"
+
+#: lib/pulse_web/live/dashboard_live.ex:139
+#, elixir-autogen, elixir-format
+msgid "No stocks yet"
+msgstr "Aún no hay acciones"
+
+#: lib/pulse_web/live/dashboard_live.ex:219
+#, elixir-autogen, elixir-format
+msgid "No visits yet"
+msgstr "Aún no hay visitas"
+
+#: lib/pulse_web/components/layouts.ex:77
+#, elixir-autogen, elixir-format
+msgid "Part of"
+msgstr "Parte de"
+
+#: lib/pulse_web/live/dashboard_live.ex:135
+#, elixir-autogen, elixir-format
+msgid "Popular Stocks"
+msgstr "Acciones Populares"
+
+#: lib/pulse_web/live/dashboard_live.ex:289
+#, elixir-autogen, elixir-format
+msgid "Portfolio changes stream in real-time"
+msgstr "Los cambios en la cartera se transmiten en tiempo real"
+
+#: lib/pulse_web/live/portfolio_live.ex:47
+#, elixir-autogen, elixir-format
+msgid "Portfolio not found"
+msgstr "Cartera no encontrada"
+
+#: lib/pulse_web/live/dashboard_live.ex:80
+#, elixir-autogen, elixir-format
+msgid "Portfolios"
+msgstr "Carteras"
+
+#: lib/pulse_web/live/dashboard_live.ex:66
+#, elixir-autogen, elixir-format
+msgid "Real-time community dividend portfolio dashboard"
+msgstr "Panel de carteras de dividendos de la comunidad en tiempo real"
+
+#: lib/pulse_web/live/portfolio_live.ex:64
+#: lib/pulse_web/live/portfolio_live.ex:71
+#, elixir-autogen, elixir-format
+msgid "Save Image"
+msgstr "Guardar Imagen"
+
+#: lib/pulse_web/live/portfolio_live.ex:66
+#, elixir-autogen, elixir-format
+msgid "Saved!"
+msgstr "¡Guardado!"
+
+#: lib/pulse_web/live/dashboard_live.ex:278
+#, elixir-autogen, elixir-format
+msgid "Share It"
+msgstr "Compártela"
+
+#: lib/pulse_web/live/portfolio_live.ex:79
+#: lib/pulse_web/live/portfolio_live.ex:85
+#, elixir-autogen, elixir-format
+msgid "Share Link"
+msgstr "Compartir Enlace"
+
+#: lib/pulse_web/live/dashboard_live.ex:141
+#, elixir-autogen, elixir-format
+msgid "Share your portfolio from"
+msgstr "Comparte tu cartera desde"
+
+#: lib/pulse_web/components/layouts.ex:134
+#, elixir-autogen, elixir-format
+msgid "Something went wrong!"
+msgstr "¡Algo salió mal!"
+
+#: lib/pulse_web/live/portfolio_live.ex:49
+#, elixir-autogen, elixir-format
+msgid "The portfolio \"%{slug}\" doesn't exist or hasn't been shared yet."
+msgstr "La cartera \"%{slug}\" no existe o aún no ha sido compartida."
+
+#: lib/pulse_web/live/portfolio_live.ex:158
+#, elixir-autogen, elixir-format
+msgid "This portfolio has no holdings yet."
+msgstr "Esta cartera aún no tiene posiciones."
+
+#: lib/pulse_web/live/dashboard_live.ex:263
+#, elixir-autogen, elixir-format
+msgid "Track your holdings on"
+msgstr "Gestiona tus posiciones en"
+
+#: lib/pulse_web/live/dashboard_live.ex:215
+#, elixir-autogen, elixir-format
+msgid "Trending This Week"
+msgstr "Tendencias de la Semana"
+
+#: lib/pulse_web/live/dashboard_live.ex:221
+#, elixir-autogen, elixir-format
+msgid "Visit a portfolio to see it here"
+msgstr "Visita una cartera para verla aquí"
+
+#: lib/pulse_web/components/layouts.ex:122
+#, elixir-autogen, elixir-format
+msgid "We can't find the internet"
+msgstr "No podemos encontrar la conexión"
+
+#: lib/pulse_web/components/core_components.ex:74
+#, elixir-autogen, elixir-format
+msgid "close"
+msgstr "cerrar"
+
+#: lib/pulse_web/live/dashboard_live.ex:186
+#, elixir-autogen, elixir-format
+msgid "settings"
+msgstr "ajustes"

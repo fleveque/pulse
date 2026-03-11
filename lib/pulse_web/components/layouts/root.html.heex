@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang={assigns[:locale] || "en"}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -46,8 +46,22 @@
           setTheme(localStorage.getItem("phx:theme") || "system");
         }
         window.addEventListener("storage", (e) => e.key === "phx:theme" && setTheme(e.newValue || "system"));
-        
+
         window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
+
+        // Locale: set html lang from localStorage before Gettext kicks in
+        const storedLang = localStorage.getItem("pulse-lang");
+        if (storedLang) {
+          document.documentElement.lang = storedLang;
+        }
+
+        // Locale toggle handler
+        window.addEventListener("phx:set-locale", (e) => {
+          const locale = e.target.dataset.phxLocale;
+          localStorage.setItem("pulse-lang", locale);
+          document.cookie = `pulse-lang=${locale};path=/;max-age=31536000;SameSite=Lax`;
+          window.location.reload();
+        });
       })();
     </script>
   </head>
