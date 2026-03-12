@@ -68,13 +68,13 @@ defmodule Pulse.PortfolioWorker do
   defp compute_metrics(holdings) do
     total_value =
       holdings
-      |> Enum.map(fn h -> (h["quantity"] || 0) * (h["avg_price"] || 0) end)
+      |> Enum.map(fn h -> (h["quantity"] || 0) * (h["price"] || h["avg_price"] || 0) end)
       |> Enum.sum()
 
     allocations =
       holdings
       |> Enum.map(fn h ->
-        value = (h["quantity"] || 0) * (h["avg_price"] || 0)
+        value = (h["quantity"] || 0) * (h["price"] || h["avg_price"] || 0)
         pct = if total_value > 0, do: Float.round(value / total_value * 100, 2), else: 0.0
 
         %{
