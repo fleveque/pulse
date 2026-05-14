@@ -5,8 +5,10 @@ ARG DEBIAN_CODENAME=trixie
 FROM hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_CODENAME}-20260223
 
 # Install dev dependencies
+# nodejs/npm needed for JS packages used by esbuild (see assets/package.json),
+# matching the production Dockerfile.
 RUN apt-get update -y && \
-    apt-get install -y build-essential git inotify-tools curl && \
+    apt-get install -y build-essential git inotify-tools curl nodejs npm && \
     apt-get clean && rm -f /var/lib/apt/lists/*_*
 
 # Install hex + rebar
