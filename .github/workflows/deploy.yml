@@ -37,7 +37,9 @@ jobs:
           bundler-cache: true
 
       - name: Install Kamal
-        run: gem install kamal
+        # Pinned to match dividend-portfolio's Gemfile.lock and stay compatible
+        # with the kamal-proxy version running on the VPS.
+        run: gem install kamal -v 2.7.0
 
       - name: Install 1Password CLI
         uses: 1password/install-cli-action@v3
