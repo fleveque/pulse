@@ -74,7 +74,11 @@ defmodule Pulse.MixProject do
   defp aliases do
     [
       setup: ["deps.get", "assets.setup", "assets.build"],
-      "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
+      "assets.setup": [
+        "tailwind.install --if-missing",
+        "esbuild.install --if-missing",
+        "cmd --cd assets npm install --prefer-offline --no-audit --no-fund"
+      ],
       "assets.build": ["compile", "tailwind pulse", "esbuild pulse"],
       "assets.deploy": [
         "tailwind pulse --minify",

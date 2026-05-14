@@ -156,19 +156,33 @@ Auto-deploys on CI success for `main` and `beta` branches.
 
 ### GitHub Secrets
 
-The deploy workflow requires these repository secrets (`Settings > Secrets and variables > Actions`):
+The deploy workflow needs just two repository secrets (`Settings > Secrets and variables > Actions`):
 
 | Secret | Description |
 |---|---|
 | `SSH_PRIVATE_KEY` | Private key for SSH access to the VPS (same key as dividend-portfolio) |
-| `KAMAL_REGISTRY_PASSWORD` | Docker registry (GHCR) password / personal access token |
-| `SECRET_KEY_BASE` | Phoenix secret — generate with `mix phx.gen.secret` |
+| `OP_SERVICE_ACCOUNT_TOKEN` | 1Password service account token — `.kamal/secrets` uses it to fetch all other secrets |
+
+`KAMAL_REGISTRY_PASSWORD`, `SECRET_KEY_BASE`, and `LOGO_SERVICE_API_KEY` live in a 1Password
+vault, fetched at deploy time by `.kamal/secrets` via `kamal secrets fetch --adapter 1password`.
+`.github/workflows/deploy.yml` also sets two plain env values, `OP_ACCOUNT` and `OP_VAULT`.
+
+For local Kamal commands, copy the sample files and fill them in (both gitignored; `direnv` loads `.env`):
+
+```
+cp env.sample .env       # fill in OP_SERVICE_ACCOUNT_TOKEN
+cp envrc.sample .envrc
+direnv allow
+```
 
 ### Environment Variables
 
+Runtime config, set in `config/deploy.yml` (the secret values among these are fetched from 1Password):
+
 | Variable | Description |
 |---|---|
-| `SECRET_KEY_BASE` | Phoenix secret (generate with `mix phx.gen.secret`) |
+| `SECRET_KEY_BASE` | Phoenix secret — fetched from 1Password |
+| `LOGO_SERVICE_API_KEY` | Auth key for the logo service — fetched from 1Password |
 | `PHX_HOST` | Hostname for URL generation |
 | `PHX_SERVER` | Set to `true` to start the HTTP server |
 | `PORT` | HTTP port (default: 4000) |
