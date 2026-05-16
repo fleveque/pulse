@@ -45,4 +45,33 @@ defmodule Pulse.DashboardAggregatorTest do
 
     assert "test-agg" in stats.portfolio_slugs
   end
+
+  test "community total sums value_in_usd across mixed-currency workers" do
+    {:ok, _pid} = Pulse.PortfolioSupervisor.start_worker("test-agg-eur")
+    {:ok, _pid} = Pulse.PortfolioSupervisor.start_worker("test-agg-usd")
+
+    # Each user's portfolio is in their preferred base, but value_in_usd lets the
+    # community dashboard sum them as a single USD figure.
+    Pulse.PortfolioWorker.update_holdings("test-agg-eur", %{
+      "version" => 2,
+      "base_currency" => "EUR",
+      "holdings" => [
+        %{"symbol" => "IBE.MC", "value_in_base" => 1000.0, "value_in_usd" => 1100.0}
+      ]
+    })
+
+    Pulse.PortfolioWorker.update_holdings("test-agg-usd", %{
+      "version" => 2,
+      "base_currency" => "USD",
+      "holdings" => [
+        %{"symbol" => "AAPL", "value_in_base" => 500.0, "value_in_usd" => 500.0}
+      ]
+    })
+
+    Process.sleep(800)
+
+    stats = Pulse.DashboardAggregator.get_stats()
+    # 1100 (EUR portfolio in USD) + 500 (USD portfolio) = 1600
+    assert stats.total_value == 1600.0
+  end
 end

@@ -83,16 +83,11 @@ defmodule Pulse.Nats.Consumer do
 
     case Pulse.PortfolioSupervisor.start_worker(slug) do
       {:ok, _pid} ->
-        if holdings = payload["holdings"] do
-          Pulse.PortfolioWorker.update_holdings(slug, holdings)
-        end
+        if payload["holdings"], do: Pulse.PortfolioWorker.update_holdings(slug, payload)
 
       {:error, {:already_started, _pid}} ->
         Logger.info("Worker already exists for #{slug}, updating holdings")
-
-        if holdings = payload["holdings"] do
-          Pulse.PortfolioWorker.update_holdings(slug, holdings)
-        end
+        if payload["holdings"], do: Pulse.PortfolioWorker.update_holdings(slug, payload)
 
       {:error, reason} ->
         Logger.error("Failed to start worker for #{slug}: #{inspect(reason)}")
@@ -109,17 +104,17 @@ defmodule Pulse.Nats.Consumer do
     notify_dashboard(slug)
   end
 
-  defp handle_event("portfolio.updated", %{"slug" => slug, "holdings" => holdings}) do
+  defp handle_event("portfolio.updated", %{"slug" => slug, "holdings" => _} = payload) do
     Logger.info("Portfolio updated: #{slug}")
 
     case Registry.lookup(Pulse.PortfolioRegistry, slug) do
       [{_pid, _}] ->
-        Pulse.PortfolioWorker.update_holdings(slug, holdings)
+        Pulse.PortfolioWorker.update_holdings(slug, payload)
 
       [] ->
         Logger.warning("No worker for #{slug}, starting one")
         Pulse.PortfolioSupervisor.start_worker(slug)
-        Pulse.PortfolioWorker.update_holdings(slug, holdings)
+        Pulse.PortfolioWorker.update_holdings(slug, payload)
     end
   end
 
