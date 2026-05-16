@@ -42,13 +42,22 @@ Public portfolio showcase and community dashboard for the dividend-portfolio eco
 
 ```
 Rails publishes:
-  {env}.portfolio.updated     {slug, holdings: [{symbol, quantity, avg_price}]}
-  {env}.portfolio.opted_in    {slug, holdings}
+  {env}.portfolio.updated     {version: 2, slug, base_currency,
+                               holdings: [{symbol, currency, quantity, avg_price,
+                                           price, value_in_base, value_in_usd}, ...]}
+  {env}.portfolio.opted_in    {version: 2, slug, base_currency, holdings: [...]}
   {env}.portfolio.opted_out   {slug}
   {env}.stock.price_updated   {symbol, price, change_percent}
 
 Pulse consumes -> updates GenServer state -> pushes to LiveView via PubSub
 ```
+
+`value_in_base` is the holding value in the user's preferred display currency
+(used by `/p/:slug` allocations); `value_in_usd` is the cross-portfolio
+normalisation key the community dashboard sums on so a mix of bases doesn't
+double-count. Older Rails deploys may emit the v1 shape (a bare holdings list
+with no `version` field) — Pulse handles both, falling back to
+`quantity * price` when the v2 fields are absent.
 
 ## Phoenix App Architecture
 
@@ -79,7 +88,7 @@ Pulse.Supervisor (one_for_one)
 Each `PortfolioWorker` is a GenServer that:
 
 1. **Starts** when a `portfolio.opted_in` event arrives — the `Nats.Consumer` tells `PortfolioSupervisor` to start a child
-2. **Holds state** — current holdings, computed metrics (allocation percentages, total value, holding count)
+2. **Holds state** — current holdings, base currency, and computed metrics: allocation percentages, total value (in the user's base), total value in USD (for community aggregation), holding count
 3. **Updates** on `portfolio.updated` events — recomputes metrics and broadcasts to PubSub
 4. **Serves reads** — LiveView pages call `PortfolioWorker.get_portfolio(slug)` via the Registry
 5. **Stops** when a `portfolio.opted_out` event arrives — the supervisor terminates the child
