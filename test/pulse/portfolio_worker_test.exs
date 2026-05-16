@@ -88,4 +88,78 @@ defmodule Pulse.PortfolioWorkerTest do
 
     assert_receive {:portfolio_updated, %Pulse.PortfolioWorker{slug: "test-pubsub"}}, 1_000
   end
+
+  test "accepts a v2 payload map with base_currency and value_in_base" do
+    {:ok, _pid} = Pulse.PortfolioSupervisor.start_worker("test-v2")
+
+    Pulse.PortfolioWorker.update_holdings("test-v2", %{
+      "version" => 2,
+      "base_currency" => "EUR",
+      "holdings" => [
+        %{
+          "symbol" => "IBE.MC",
+          "quantity" => 20,
+          "avg_price" => 12.0,
+          "price" => 14.5,
+          "currency" => "EUR",
+          "value_in_base" => 290.0,
+          "value_in_usd" => 319.0
+        },
+        %{
+          "symbol" => "AAPL",
+          "quantity" => 10,
+          "avg_price" => 150.0,
+          "price" => 175.0,
+          "currency" => "USD",
+          "value_in_base" => 1575.0,
+          "value_in_usd" => 1750.0
+        }
+      ]
+    })
+
+    Process.sleep(50)
+
+    portfolio = Pulse.PortfolioWorker.get_portfolio("test-v2")
+    assert portfolio.base_currency == "EUR"
+    # Sums value_in_base, not quantity * price
+    assert portfolio.metrics.total_value == 1865.0
+    assert portfolio.metrics.total_value_in_usd == 2069.0
+  end
+
+  test "v2 payload allocations use value_in_base for percentages" do
+    {:ok, _pid} = Pulse.PortfolioSupervisor.start_worker("test-v2-alloc")
+
+    Pulse.PortfolioWorker.update_holdings("test-v2-alloc", %{
+      "version" => 2,
+      "base_currency" => "USD",
+      "holdings" => [
+        %{"symbol" => "A", "value_in_base" => 750.0, "value_in_usd" => 750.0},
+        %{"symbol" => "B", "value_in_base" => 250.0, "value_in_usd" => 250.0}
+      ]
+    })
+
+    Process.sleep(50)
+
+    portfolio = Pulse.PortfolioWorker.get_portfolio("test-v2-alloc")
+    a = Enum.find(portfolio.metrics.allocations, &(&1.symbol == "A"))
+    b = Enum.find(portfolio.metrics.allocations, &(&1.symbol == "B"))
+    assert a.percentage == 75.0
+    assert b.percentage == 25.0
+  end
+
+  test "v1 list payload still works (back-compat)" do
+    {:ok, _pid} = Pulse.PortfolioSupervisor.start_worker("test-v1-compat")
+
+    Pulse.PortfolioWorker.update_holdings("test-v1-compat", [
+      %{"symbol" => "AAPL", "quantity" => 10, "avg_price" => 100.0, "price" => 150.0}
+    ])
+
+    Process.sleep(50)
+
+    portfolio = Pulse.PortfolioWorker.get_portfolio("test-v1-compat")
+    assert portfolio.metrics.total_value == 1500.0
+    # In v1 we treat total_value as USD for cross-portfolio aggregation
+    assert portfolio.metrics.total_value_in_usd == 1500.0
+    assert portfolio.base_currency == "USD"
+  end
 end

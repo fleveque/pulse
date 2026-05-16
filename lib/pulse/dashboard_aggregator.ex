@@ -79,9 +79,12 @@ defmodule Pulse.DashboardAggregator do
       portfolios
       |> Enum.flat_map(& &1.holdings)
 
+    # Community dashboard sums in USD so per-user base currencies don't double-count.
+    # v2 workers populate total_value_in_usd; older workers (or USD-only v2) fall back
+    # to total_value, which is the same number in that case.
     total_value =
       portfolios
-      |> Enum.map(fn p -> p.metrics[:total_value] || 0 end)
+      |> Enum.map(fn p -> p.metrics[:total_value_in_usd] || p.metrics[:total_value] || 0 end)
       |> Enum.sum()
 
     stock_counts =

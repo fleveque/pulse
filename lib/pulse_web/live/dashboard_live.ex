@@ -301,11 +301,28 @@ defmodule PulseWeb.DashboardLive do
   defp rank_style(2), do: "bg-orange-500/20 text-orange-600 dark:text-orange-400"
   defp rank_style(_), do: "bg-base-300 text-base-content/50"
 
-  defp format_currency_no_decimals(value) when is_number(value) do
-    "$#{trunc(value)}"
+  # Currency-aware formatter. Community dashboard always passes USD; per-portfolio
+  # views can pass a non-USD currency once the v2 payload's base_currency is wired
+  # into them.
+  @currency_symbols %{
+    "USD" => "$",
+    "EUR" => "€",
+    "GBP" => "£",
+    "JPY" => "¥",
+    "CHF" => "CHF ",
+    "CAD" => "C$",
+    "AUD" => "A$"
+  }
+
+  defp format_currency_no_decimals(value, currency \\ "USD")
+
+  defp format_currency_no_decimals(value, currency) when is_number(value) do
+    "#{Map.get(@currency_symbols, currency, "#{currency} ")}#{trunc(value)}"
   end
 
-  defp format_currency_no_decimals(_), do: "$0"
+  defp format_currency_no_decimals(_, currency) do
+    "#{Map.get(@currency_symbols, currency, "#{currency} ")}0"
+  end
 
   defp format_number(value) when is_float(value) do
     if value == Float.floor(value) do
