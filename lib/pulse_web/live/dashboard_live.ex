@@ -26,9 +26,9 @@ defmodule PulseWeb.DashboardLive do
        show_value: stats.portfolio_count > 5 and stats.total_value > 100_000,
        popular_stocks: stats.popular_stocks,
        portfolio_slugs: stats.portfolio_slugs,
-       community_sectors: community_sectors_assign(stats),
-       community_yoc: community_value_assign(stats, :community_yoc),
-       community_current_yield: community_value_assign(stats, :community_current_yield),
+       community_sectors: Map.get(stats, :community_sectors, []),
+       community_yoc: Map.get(stats, :community_yoc),
+       community_current_yield: Map.get(stats, :community_current_yield),
        top_visited: top_visited
      )}
   end
@@ -43,21 +43,10 @@ defmodule PulseWeb.DashboardLive do
        show_value: stats.portfolio_count > 5 and stats.total_value > 100_000,
        popular_stocks: stats.popular_stocks,
        portfolio_slugs: stats.portfolio_slugs,
-       community_sectors: community_sectors_assign(stats),
-       community_yoc: community_value_assign(stats, :community_yoc),
-       community_current_yield: community_value_assign(stats, :community_current_yield)
+       community_sectors: Map.get(stats, :community_sectors, []),
+       community_yoc: Map.get(stats, :community_yoc),
+       community_current_yield: Map.get(stats, :community_current_yield)
      )}
-  end
-
-  # Same privacy guard as `show_value`: only expose community aggregates once
-  # there's enough cohort for them to be meaningful and not trivially
-  # de-anonymisable.
-  defp community_sectors_assign(stats) do
-    if stats.portfolio_count > 5, do: Map.get(stats, :community_sectors, []), else: []
-  end
-
-  defp community_value_assign(stats, key) do
-    if stats.portfolio_count > 5, do: Map.get(stats, key), else: nil
   end
 
   @impl true
