@@ -123,6 +123,61 @@ defmodule PulseWeb.PortfolioLive do
             </div>
           </div>
 
+          <%!-- Portfolio stats (YoC, current yield, sectors) — only when Rails ships a stats block --%>
+          <div :if={portfolio_has_stats?(@portfolio)} class="mb-6 grid gap-4 md:grid-cols-2">
+            <div
+              :if={@portfolio.stats["yoc"] || @portfolio.stats["currentYield"]}
+              class="card bg-base-200 border border-base-300"
+            >
+              <div class="card-body p-4">
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <p class="text-xs text-base-content/50">{gettext("Yield on Cost")}</p>
+                    <p class="text-2xl font-bold tabular-nums">
+                      {format_percent(@portfolio.stats["yoc"])}
+                    </p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-base-content/50">{gettext("Current Yield")}</p>
+                    <p class="text-2xl font-bold tabular-nums">
+                      {format_percent(@portfolio.stats["currentYield"])}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              :if={length(@portfolio.stats["sectors"] || []) > 0}
+              class="card bg-base-200 border border-base-300"
+            >
+              <div class="card-body p-4">
+                <p class="text-xs text-base-content/50 mb-2">{gettext("Sectors")}</p>
+                <div class="flex rounded-full overflow-hidden h-3 bg-base-300 mb-2">
+                  <div
+                    :for={{sector, idx} <- Enum.with_index(@portfolio.stats["sectors"])}
+                    class={"h-full " <> allocation_color(idx)}
+                    style={"width: #{sector["percent"]}%"}
+                    title={"#{sector["sector"]}: #{Float.round(sector["percent"] * 1.0, 1)}%"}
+                  >
+                  </div>
+                </div>
+                <ul class="flex flex-wrap gap-x-3 gap-y-1 text-xs">
+                  <li
+                    :for={{sector, idx} <- Enum.with_index(@portfolio.stats["sectors"])}
+                    class="flex items-center gap-1.5"
+                  >
+                    <span class={"size-2 rounded-sm " <> allocation_color(idx)}></span>
+                    <span>{sector["sector"]}</span>
+                    <span class="text-base-content/50 tabular-nums">
+                      {Float.round(sector["percent"] * 1.0, 1)}%
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
           <%!-- Stock Grid --%>
           <div class="capture-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
             <div
@@ -178,4 +233,14 @@ defmodule PulseWeb.PortfolioLive do
   defp allocation_color(index) do
     Enum.at(@allocation_colors, rem(index, length(@allocation_colors)))
   end
+
+  defp portfolio_has_stats?(%{stats: stats}) when is_map(stats), do: true
+  defp portfolio_has_stats?(_), do: false
+
+  defp format_percent(nil), do: "—"
+
+  defp format_percent(n) when is_number(n),
+    do: "#{:erlang.float_to_binary(n * 1.0, decimals: 2)}%"
+
+  defp format_percent(_), do: "—"
 end
