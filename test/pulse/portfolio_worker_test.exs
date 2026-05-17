@@ -162,4 +162,40 @@ defmodule Pulse.PortfolioWorkerTest do
     assert portfolio.metrics.total_value_in_usd == 1500.0
     assert portfolio.base_currency == "USD"
   end
+
+  test "stores stats from the payload (v2.1+)" do
+    {:ok, _pid} = Pulse.PortfolioSupervisor.start_worker("test-stats")
+
+    Pulse.PortfolioWorker.update_holdings("test-stats", %{
+      "version" => 2,
+      "base_currency" => "USD",
+      "holdings" => [%{"symbol" => "AAPL", "value_in_base" => 1000.0, "value_in_usd" => 1000.0}],
+      "stats" => %{
+        "yoc" => 3.2,
+        "currentYield" => 2.8,
+        "sectors" => [%{"sector" => "Technology", "value" => 1000.0, "percent" => 100.0}]
+      }
+    })
+
+    Process.sleep(50)
+
+    portfolio = Pulse.PortfolioWorker.get_portfolio("test-stats")
+    assert portfolio.stats["yoc"] == 3.2
+    assert portfolio.stats["currentYield"] == 2.8
+    assert hd(portfolio.stats["sectors"])["sector"] == "Technology"
+  end
+
+  test "missing stats field stays nil (back-compat for older Rails deploys)" do
+    {:ok, _pid} = Pulse.PortfolioSupervisor.start_worker("test-nostats")
+
+    Pulse.PortfolioWorker.update_holdings("test-nostats", %{
+      "version" => 2,
+      "base_currency" => "USD",
+      "holdings" => [%{"symbol" => "AAPL", "value_in_base" => 1000.0, "value_in_usd" => 1000.0}]
+    })
+
+    Process.sleep(50)
+    portfolio = Pulse.PortfolioWorker.get_portfolio("test-nostats")
+    assert portfolio.stats == nil
+  end
 end

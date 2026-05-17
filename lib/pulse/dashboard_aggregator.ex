@@ -104,7 +104,70 @@ defmodule Pulse.DashboardAggregator do
       total_holdings: length(all_holdings),
       total_value: Float.round(total_value * 1.0, 2),
       popular_stocks: Enum.take(stock_counts, 10),
-      portfolio_slugs: Enum.map(portfolios, & &1.slug)
+      portfolio_slugs: Enum.map(portfolios, & &1.slug),
+      community_sectors: community_sectors(portfolios),
+      community_yoc: community_average(portfolios, "yoc"),
+      community_current_yield: community_average(portfolios, "currentYield")
     }
+  end
+
+  # Simple mean across portfolios that ship a stats block — answers "what's the
+  # typical Quantic user's yield?" rather than a value-weighted aggregate. Nil
+  # if no worker has stats yet (newer Rails ships them, older deploys don't).
+  defp community_average(portfolios, key) do
+    values =
+      portfolios
+      |> Enum.filter(fn p -> is_map(p.stats) end)
+      |> Enum.map(fn p -> p.stats[key] end)
+      |> Enum.filter(&is_number/1)
+
+    case values do
+      [] -> nil
+      vs -> Float.round(Enum.sum(vs) / length(vs), 2)
+    end
+  end
+
+  # Community-wide sector breakdown. Each worker ships its own pre-aggregated
+  # `sectors` list (in the user's display currency) in `state.stats`. We can't
+  # safely add those across different display currencies, so we weight by each
+  # portfolio's `total_value_in_usd` to normalise. Returns an empty list when
+  # no worker has stats yet.
+  defp community_sectors(portfolios) do
+    with_stats =
+      portfolios
+      |> Enum.filter(fn p -> is_map(p.stats) && is_list(p.stats["sectors"]) end)
+
+    if with_stats == [] do
+      []
+    else
+      totals =
+        with_stats
+        |> Enum.flat_map(fn p ->
+          portfolio_usd = (p.metrics[:total_value_in_usd] || p.metrics[:total_value] || 0) * 1.0
+
+          Enum.map(p.stats["sectors"], fn s ->
+            {s["sector"] || "Unknown", (s["percent"] || 0) / 100.0 * portfolio_usd}
+          end)
+        end)
+        |> Enum.reduce(%{}, fn {sector, value}, acc ->
+          Map.update(acc, sector, value, &(&1 + value))
+        end)
+
+      grand_total = totals |> Map.values() |> Enum.sum()
+
+      if grand_total <= 0 do
+        []
+      else
+        totals
+        |> Enum.map(fn {sector, value} ->
+          %{
+            sector: sector,
+            value: Float.round(value, 2),
+            percent: Float.round(value / grand_total * 100, 1)
+          }
+        end)
+        |> Enum.sort_by(& &1.value, :desc)
+      end
+    end
   end
 end

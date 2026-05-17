@@ -26,6 +26,9 @@ defmodule PulseWeb.DashboardLive do
        show_value: stats.portfolio_count > 5 and stats.total_value > 100_000,
        popular_stocks: stats.popular_stocks,
        portfolio_slugs: stats.portfolio_slugs,
+       community_sectors: Map.get(stats, :community_sectors, []),
+       community_yoc: Map.get(stats, :community_yoc),
+       community_current_yield: Map.get(stats, :community_current_yield),
        top_visited: top_visited
      )}
   end
@@ -39,7 +42,10 @@ defmodule PulseWeb.DashboardLive do
        total_value: stats.total_value,
        show_value: stats.portfolio_count > 5 and stats.total_value > 100_000,
        popular_stocks: stats.popular_stocks,
-       portfolio_slugs: stats.portfolio_slugs
+       portfolio_slugs: stats.portfolio_slugs,
+       community_sectors: Map.get(stats, :community_sectors, []),
+       community_yoc: Map.get(stats, :community_yoc),
+       community_current_yield: Map.get(stats, :community_current_yield)
      )}
   end
 
@@ -249,6 +255,79 @@ defmodule PulseWeb.DashboardLive do
         </div>
       </div>
 
+      <%!-- Community yield cards (gated by cohort threshold same as total_value) --%>
+      <div
+        :if={@community_yoc || @community_current_yield}
+        class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4"
+      >
+        <div
+          :if={@community_yoc}
+          class="card bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border border-emerald-500/20"
+        >
+          <div class="card-body p-5">
+            <div class="flex items-center gap-3">
+              <div class="rounded-xl bg-emerald-500/15 p-2.5">
+                <.icon name="hero-trending-up" class="size-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <p class="text-xs text-base-content/50 uppercase tracking-wider font-semibold">
+                  {gettext("Average Yield on Cost")}
+                </p>
+                <p class="text-2xl font-bold tabular-nums">{@community_yoc}%</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          :if={@community_current_yield}
+          class="card bg-gradient-to-br from-cyan-500/10 to-cyan-600/5 border border-cyan-500/20"
+        >
+          <div class="card-body p-5">
+            <div class="flex items-center gap-3">
+              <div class="rounded-xl bg-cyan-500/15 p-2.5">
+                <.icon name="hero-currency-dollar" class="size-5 text-cyan-600 dark:text-cyan-400" />
+              </div>
+              <div>
+                <p class="text-xs text-base-content/50 uppercase tracking-wider font-semibold">
+                  {gettext("Average Current Yield")}
+                </p>
+                <p class="text-2xl font-bold tabular-nums">{@community_current_yield}%</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <%!-- Community Sectors (gated by cohort threshold same as total_value) --%>
+      <div :if={@community_sectors != []} class="mt-6 card bg-base-200 border border-base-300">
+        <div class="card-body p-5">
+          <div class="flex items-center gap-2 mb-4">
+            <.icon name="hero-chart-pie" class="size-5 text-blue-500" />
+            <h2 class="text-lg font-bold">{gettext("Community Sectors")}</h2>
+          </div>
+          <div class="flex rounded-full overflow-hidden h-4 bg-base-300 mb-3">
+            <div
+              :for={{sector, idx} <- Enum.with_index(@community_sectors)}
+              class={"h-full " <> sector_color(idx)}
+              style={"width: #{sector.percent}%"}
+              title={"#{sector.sector}: #{sector.percent}%"}
+            >
+            </div>
+          </div>
+          <ul class="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+            <li
+              :for={{sector, idx} <- Enum.with_index(@community_sectors)}
+              class="flex items-center gap-2"
+            >
+              <span class={"size-3 rounded-sm " <> sector_color(idx)}></span>
+              <span class="font-medium">{sector.sector}</span>
+              <span class="text-base-content/50 tabular-nums">{sector.percent}%</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
       <%!-- How It Works --%>
       <div class="mt-10 card bg-base-200 border border-base-300">
         <div class="card-body p-6">
@@ -300,6 +379,18 @@ defmodule PulseWeb.DashboardLive do
   defp rank_style(1), do: "bg-gray-400/20 text-gray-500 dark:text-gray-400"
   defp rank_style(2), do: "bg-orange-500/20 text-orange-600 dark:text-orange-400"
   defp rank_style(_), do: "bg-base-300 text-base-content/50"
+
+  # Palette for the community-sector bar; rotates through 12 hues so we don't
+  # repeat too quickly even on very diverse portfolios.
+  @sector_colors ~w(
+    bg-emerald-500 bg-blue-500 bg-amber-500 bg-purple-500 bg-rose-500
+    bg-cyan-500 bg-indigo-500 bg-orange-500 bg-lime-500 bg-pink-500
+    bg-teal-500 bg-slate-400
+  )
+
+  defp sector_color(index) do
+    Enum.at(@sector_colors, rem(index, length(@sector_colors)))
+  end
 
   # Currency-aware formatter. Community dashboard always passes USD; per-portfolio
   # views can pass a non-USD currency once the v2 payload's base_currency is wired

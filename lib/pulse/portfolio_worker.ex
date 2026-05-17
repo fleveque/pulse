@@ -22,7 +22,7 @@ defmodule Pulse.PortfolioWorker do
 
   require Logger
 
-  defstruct [:slug, holdings: [], metrics: %{}, base_currency: "USD"]
+  defstruct [:slug, holdings: [], metrics: %{}, base_currency: "USD", stats: nil]
 
   # Client API
 
@@ -59,12 +59,17 @@ defmodule Pulse.PortfolioWorker do
   def handle_cast({:update_holdings, payload}, state) do
     holdings = payload["holdings"] || []
     base_currency = payload["base_currency"] || "USD"
+    # Rails ships pre-aggregated YoC / current yield / sectors as of payload v2.
+    # Older payloads (v1, or v2 from a pre-stats deploy) leave this nil — the
+    # LiveView templates already guard for it.
+    stats = payload["stats"]
 
     new_state = %{
       state
       | holdings: holdings,
         base_currency: base_currency,
-        metrics: compute_metrics(holdings)
+        metrics: compute_metrics(holdings),
+        stats: stats
     }
 
     Pulse.Store.put(state.slug, new_state)
