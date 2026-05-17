@@ -86,6 +86,7 @@ defmodule Pulse.DashboardAggregatorTest do
 
   test "community_sectors is empty when no worker has stats" do
     {:ok, _} = Pulse.PortfolioSupervisor.start_worker("agg-no-stats")
+
     Pulse.PortfolioWorker.update_holdings("agg-no-stats", [
       %{"symbol" => "AAPL", "quantity" => 10, "avg_price" => 100.0, "price" => 150.0}
     ])
