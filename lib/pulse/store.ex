@@ -18,9 +18,22 @@ defmodule Pulse.Store do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
-  @doc "Persist portfolio state for a slug."
-  def put(slug, %{holdings: holdings, metrics: metrics}) do
-    GenServer.cast(__MODULE__, {:put, slug, %{holdings: holdings, metrics: metrics}})
+  @doc """
+  Persist portfolio state for a slug.
+
+  Stores only the fields needed to rehydrate a worker after a restart:
+  raw holdings (so metrics get recomputed against fresh code), the user's
+  base currency, and the pre-aggregated stats block Rails ships in v2
+  payloads. Metrics are intentionally NOT persisted — they're derived.
+  """
+  def put(slug, state) when is_map(state) do
+    persistable = %{
+      holdings: Map.get(state, :holdings, []),
+      base_currency: Map.get(state, :base_currency, "USD"),
+      stats: Map.get(state, :stats)
+    }
+
+    GenServer.cast(__MODULE__, {:put, slug, persistable})
   end
 
   @doc "Retrieve persisted state for a slug."
@@ -108,15 +121,11 @@ defmodule Pulse.Store do
       Enum.reduce(entries, 0, fn {slug, state}, count ->
         case Pulse.PortfolioSupervisor.start_worker(slug) do
           {:ok, _pid} ->
-            if holdings = state[:holdings],
-              do: Pulse.PortfolioWorker.update_holdings(slug, holdings)
-
+            restore_worker_state(slug, state)
             count + 1
 
           {:error, {:already_started, _pid}} ->
-            if holdings = state[:holdings],
-              do: Pulse.PortfolioWorker.update_holdings(slug, holdings)
-
+            restore_worker_state(slug, state)
             count + 1
 
           {:error, reason} ->
@@ -127,6 +136,19 @@ defmodule Pulse.Store do
 
     Logger.info("Restored #{restored}/#{length(entries)} portfolios from DETS")
     {:reply, {:ok, restored}, data}
+  end
+
+  # Rebuild the v2 NATS payload shape from persisted fields so the worker
+  # rehydrates base_currency and the pre-aggregated stats block — without
+  # this, restarts wipe stats until Rails re-broadcasts.
+  defp restore_worker_state(slug, state) when is_map(state) do
+    payload = %{
+      "holdings" => state[:holdings] || [],
+      "base_currency" => state[:base_currency] || "USD",
+      "stats" => state[:stats]
+    }
+
+    Pulse.PortfolioWorker.update_holdings(slug, payload)
   end
 
   @impl true

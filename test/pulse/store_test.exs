@@ -19,14 +19,32 @@ defmodule Pulse.StoreTest do
     test "persists and retrieves portfolio state" do
       state = %{
         holdings: [%{"symbol" => "AAPL", "quantity" => 10, "avg_price" => 150.0}],
-        metrics: %{total_value: 1500.0}
+        base_currency: "USD",
+        stats: %{"yoc" => 4.5, "currentYield" => 3.2}
       }
 
       Pulse.Store.put("alice", state)
-      # Give the cast time to process
       Process.sleep(50)
 
       assert Pulse.Store.get("alice") == state
+    end
+
+    test "extracts only persistable fields, dropping metrics and other transient keys" do
+      Pulse.Store.put("alice", %{
+        holdings: [%{"symbol" => "AAPL"}],
+        metrics: %{total_value: 1500.0},
+        slug: "alice",
+        base_currency: "EUR",
+        stats: nil
+      })
+
+      Process.sleep(50)
+
+      assert Pulse.Store.get("alice") == %{
+               holdings: [%{"symbol" => "AAPL"}],
+               base_currency: "EUR",
+               stats: nil
+             }
     end
 
     test "returns nil for unknown slug" do
@@ -34,8 +52,8 @@ defmodule Pulse.StoreTest do
     end
 
     test "overwrites existing entry" do
-      state1 = %{holdings: [%{"symbol" => "AAPL"}], metrics: %{}}
-      state2 = %{holdings: [%{"symbol" => "MSFT"}], metrics: %{}}
+      state1 = %{holdings: [%{"symbol" => "AAPL"}], base_currency: "USD", stats: nil}
+      state2 = %{holdings: [%{"symbol" => "MSFT"}], base_currency: "USD", stats: nil}
 
       Pulse.Store.put("bob", state1)
       Process.sleep(50)
@@ -48,8 +66,8 @@ defmodule Pulse.StoreTest do
 
   describe "all/0" do
     test "returns all persisted entries" do
-      Pulse.Store.put("alice", %{holdings: [], metrics: %{}})
-      Pulse.Store.put("bob", %{holdings: [], metrics: %{}})
+      Pulse.Store.put("alice", %{holdings: []})
+      Pulse.Store.put("bob", %{holdings: []})
       Process.sleep(50)
 
       entries = Pulse.Store.all()
@@ -65,7 +83,7 @@ defmodule Pulse.StoreTest do
 
   describe "delete/1" do
     test "removes a persisted entry" do
-      Pulse.Store.put("alice", %{holdings: [], metrics: %{}})
+      Pulse.Store.put("alice", %{holdings: []})
       Process.sleep(50)
       assert Pulse.Store.get("alice") != nil
 
@@ -84,25 +102,46 @@ defmodule Pulse.StoreTest do
   describe "restore_all/0" do
     test "starts workers for all persisted portfolios" do
       holdings = [%{"symbol" => "AAPL", "quantity" => 10, "avg_price" => 150.0}]
-      Pulse.Store.put("restore-test", %{holdings: holdings, metrics: %{}})
+      Pulse.Store.put("restore-test", %{holdings: holdings})
       Process.sleep(50)
 
-      # Ensure no worker exists
       assert Registry.lookup(Pulse.PortfolioRegistry, "restore-test") == []
 
       {:ok, restored} = Pulse.Store.restore_all()
       assert restored == 1
 
-      # Give the worker time to process the update_holdings cast
       Process.sleep(100)
 
-      # Worker should now exist with holdings
       assert [{_pid, _}] = Registry.lookup(Pulse.PortfolioRegistry, "restore-test")
       portfolio = Pulse.PortfolioWorker.get_portfolio("restore-test")
       assert length(portfolio.holdings) == 1
 
-      # Clean up
       Pulse.PortfolioSupervisor.stop_worker("restore-test")
+    end
+
+    test "rehydrates base_currency and stats so dashboards survive restarts" do
+      Pulse.Store.put("restore-stats", %{
+        holdings: [%{"symbol" => "AAPL", "value_in_base" => 1000.0, "value_in_usd" => 1000.0}],
+        base_currency: "EUR",
+        stats: %{
+          "yoc" => 4.5,
+          "currentYield" => 3.2,
+          "sectors" => [%{"sector" => "Technology", "percent" => 100.0}]
+        }
+      })
+
+      Process.sleep(50)
+
+      {:ok, _} = Pulse.Store.restore_all()
+      Process.sleep(100)
+
+      portfolio = Pulse.PortfolioWorker.get_portfolio("restore-stats")
+      assert portfolio.base_currency == "EUR"
+      assert portfolio.stats["yoc"] == 4.5
+      assert portfolio.stats["currentYield"] == 3.2
+      assert [%{"sector" => "Technology"}] = portfolio.stats["sectors"]
+
+      Pulse.PortfolioSupervisor.stop_worker("restore-stats")
     end
   end
 end
