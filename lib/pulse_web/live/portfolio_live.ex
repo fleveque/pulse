@@ -104,25 +104,6 @@ defmodule PulseWeb.PortfolioLive do
             </div>
           </div>
 
-          <%!-- Allocation Bar --%>
-          <div
-            :if={length(@portfolio.metrics[:allocations] || []) > 0}
-            class="mb-6"
-          >
-            <div class="flex rounded-full overflow-hidden h-4 bg-base-300">
-              <div
-                :for={
-                  {alloc, idx} <-
-                    Enum.with_index(sorted_allocations(@portfolio.metrics[:allocations]))
-                }
-                class={"h-full " <> allocation_color(idx)}
-                style={"width: #{alloc.percentage}%"}
-                title={"#{alloc.symbol}: #{alloc.percentage}%"}
-              >
-              </div>
-            </div>
-          </div>
-
           <%!-- Portfolio stats (YoC, current yield, sectors) — only when Rails ships a stats block --%>
           <div :if={portfolio_has_stats?(@portfolio)} class="mb-6 grid gap-4 md:grid-cols-2">
             <div
@@ -174,6 +155,25 @@ defmodule PulseWeb.PortfolioLive do
                     </span>
                   </li>
                 </ul>
+              </div>
+            </div>
+          </div>
+
+          <%!-- Allocation Bar — between stats and individual stocks --%>
+          <div
+            :if={length(@portfolio.metrics[:allocations] || []) > 0}
+            class="mb-6"
+          >
+            <div class="flex rounded-full overflow-hidden h-4 bg-base-300">
+              <div
+                :for={
+                  {alloc, idx} <-
+                    Enum.with_index(sorted_allocations(@portfolio.metrics[:allocations]))
+                }
+                class={"h-full " <> allocation_color(idx)}
+                style={"width: #{alloc.percentage}%"}
+                title={"#{alloc.symbol}: #{alloc.percentage}%"}
+              >
               </div>
             </div>
           </div>

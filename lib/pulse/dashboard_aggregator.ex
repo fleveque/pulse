@@ -105,8 +105,26 @@ defmodule Pulse.DashboardAggregator do
       total_value: Float.round(total_value * 1.0, 2),
       popular_stocks: Enum.take(stock_counts, 10),
       portfolio_slugs: Enum.map(portfolios, & &1.slug),
-      community_sectors: community_sectors(portfolios)
+      community_sectors: community_sectors(portfolios),
+      community_yoc: community_average(portfolios, "yoc"),
+      community_current_yield: community_average(portfolios, "currentYield")
     }
+  end
+
+  # Simple mean across portfolios that ship a stats block — answers "what's the
+  # typical Quantic user's yield?" rather than a value-weighted aggregate. Nil
+  # if no worker has stats yet (newer Rails ships them, older deploys don't).
+  defp community_average(portfolios, key) do
+    values =
+      portfolios
+      |> Enum.filter(fn p -> is_map(p.stats) end)
+      |> Enum.map(fn p -> p.stats[key] end)
+      |> Enum.filter(&is_number/1)
+
+    case values do
+      [] -> nil
+      vs -> Float.round(Enum.sum(vs) / length(vs), 2)
+    end
   end
 
   # Community-wide sector breakdown. Each worker ships its own pre-aggregated

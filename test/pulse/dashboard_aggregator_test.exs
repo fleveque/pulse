@@ -96,6 +96,45 @@ defmodule Pulse.DashboardAggregatorTest do
     assert stats.community_sectors == []
   end
 
+  test "community_yoc and community_current_yield average across workers with stats" do
+    {:ok, _} = Pulse.PortfolioSupervisor.start_worker("agg-yld-a")
+    {:ok, _} = Pulse.PortfolioSupervisor.start_worker("agg-yld-b")
+
+    Pulse.PortfolioWorker.update_holdings("agg-yld-a", %{
+      "version" => 2,
+      "base_currency" => "USD",
+      "holdings" => [%{"symbol" => "AAPL", "value_in_base" => 1000.0, "value_in_usd" => 1000.0}],
+      "stats" => %{"yoc" => 4.0, "currentYield" => 3.0}
+    })
+
+    Pulse.PortfolioWorker.update_holdings("agg-yld-b", %{
+      "version" => 2,
+      "base_currency" => "USD",
+      "holdings" => [%{"symbol" => "MSFT", "value_in_base" => 500.0, "value_in_usd" => 500.0}],
+      "stats" => %{"yoc" => 6.0, "currentYield" => 5.0}
+    })
+
+    Process.sleep(800)
+
+    stats = Pulse.DashboardAggregator.get_stats()
+    assert stats.community_yoc == 5.0
+    assert stats.community_current_yield == 4.0
+  end
+
+  test "community_yoc is nil when no worker has stats" do
+    {:ok, _} = Pulse.PortfolioSupervisor.start_worker("agg-no-yld")
+
+    Pulse.PortfolioWorker.update_holdings("agg-no-yld", [
+      %{"symbol" => "AAPL", "quantity" => 10, "avg_price" => 100.0, "price" => 150.0}
+    ])
+
+    Process.sleep(800)
+
+    stats = Pulse.DashboardAggregator.get_stats()
+    assert stats.community_yoc == nil
+    assert stats.community_current_yield == nil
+  end
+
   test "community total sums value_in_usd across mixed-currency workers" do
     {:ok, _pid} = Pulse.PortfolioSupervisor.start_worker("test-agg-eur")
     {:ok, _pid} = Pulse.PortfolioSupervisor.start_worker("test-agg-usd")

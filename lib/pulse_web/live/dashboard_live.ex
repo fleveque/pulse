@@ -27,6 +27,8 @@ defmodule PulseWeb.DashboardLive do
        popular_stocks: stats.popular_stocks,
        portfolio_slugs: stats.portfolio_slugs,
        community_sectors: community_sectors_assign(stats),
+       community_yoc: community_value_assign(stats, :community_yoc),
+       community_current_yield: community_value_assign(stats, :community_current_yield),
        top_visited: top_visited
      )}
   end
@@ -41,15 +43,21 @@ defmodule PulseWeb.DashboardLive do
        show_value: stats.portfolio_count > 5 and stats.total_value > 100_000,
        popular_stocks: stats.popular_stocks,
        portfolio_slugs: stats.portfolio_slugs,
-       community_sectors: community_sectors_assign(stats)
+       community_sectors: community_sectors_assign(stats),
+       community_yoc: community_value_assign(stats, :community_yoc),
+       community_current_yield: community_value_assign(stats, :community_current_yield)
      )}
   end
 
-  # Same privacy guard as `show_value`: only expose the community sector
-  # breakdown once there's enough cohort for it to be meaningful and not
-  # trivially de-anonymisable.
+  # Same privacy guard as `show_value`: only expose community aggregates once
+  # there's enough cohort for them to be meaningful and not trivially
+  # de-anonymisable.
   defp community_sectors_assign(stats) do
     if stats.portfolio_count > 5, do: Map.get(stats, :community_sectors, []), else: []
+  end
+
+  defp community_value_assign(stats, key) do
+    if stats.portfolio_count > 5, do: Map.get(stats, key), else: nil
   end
 
   @impl true
@@ -253,6 +261,50 @@ defmodule PulseWeb.DashboardLive do
                   {entry.visits}
                 </span>
               </.link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <%!-- Community yield cards (gated by cohort threshold same as total_value) --%>
+      <div
+        :if={@community_yoc || @community_current_yield}
+        class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4"
+      >
+        <div
+          :if={@community_yoc}
+          class="card bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border border-emerald-500/20"
+        >
+          <div class="card-body p-5">
+            <div class="flex items-center gap-3">
+              <div class="rounded-xl bg-emerald-500/15 p-2.5">
+                <.icon name="hero-trending-up" class="size-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <p class="text-xs text-base-content/50 uppercase tracking-wider font-semibold">
+                  {gettext("Average Yield on Cost")}
+                </p>
+                <p class="text-2xl font-bold tabular-nums">{@community_yoc}%</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          :if={@community_current_yield}
+          class="card bg-gradient-to-br from-cyan-500/10 to-cyan-600/5 border border-cyan-500/20"
+        >
+          <div class="card-body p-5">
+            <div class="flex items-center gap-3">
+              <div class="rounded-xl bg-cyan-500/15 p-2.5">
+                <.icon name="hero-currency-dollar" class="size-5 text-cyan-600 dark:text-cyan-400" />
+              </div>
+              <div>
+                <p class="text-xs text-base-content/50 uppercase tracking-wider font-semibold">
+                  {gettext("Average Current Yield")}
+                </p>
+                <p class="text-2xl font-bold tabular-nums">{@community_current_yield}%</p>
+              </div>
             </div>
           </div>
         </div>
